@@ -27,6 +27,7 @@ type FolderNameRow = {
   id: string;
   name: string;
   parent_id: string | null;
+  sort_order: number | null;
 };
 
 export default function SettingsPage() {
@@ -106,7 +107,7 @@ export default function SettingsPage() {
 
       const { data: existingFolders, error: fetchError } = await supabase
         .from("folders")
-        .select("id,name,parent_id")
+        .select("id,name,parent_id,sort_order")
         .eq("user_id", user.id);
 
       if (fetchError) throw fetchError;
@@ -128,8 +129,10 @@ export default function SettingsPage() {
             parent_id: parentId,
             color: null,
             icon: null,
+            shape: "soft",
+            sort_order: knownFolders.filter((folder) => folder.parent_id === parentId).length,
           })
-          .select("id,name,parent_id")
+          .select("id,name,parent_id,sort_order")
           .single();
 
         if (insertError) throw insertError;

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, ChevronRight, Folder as FolderIcon, Plus } from "lucide-react";
+import { ArrowLeft, ChevronRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { createSupabaseBrowser } from "@/lib/supabase";
@@ -11,6 +11,7 @@ import type { VaultFolder } from "@/types";
 import { FileUpload } from "@/components/FileUpload";
 import { FileGrid } from "@/components/FileGrid";
 import { FileViewer } from "@/components/FileViewer";
+import { FolderManager } from "@/components/FolderManager";
 import type { FileCardModel } from "@/components/FileCard";
 
 import { Button } from "@/components/ui/button";
@@ -53,12 +54,13 @@ export default function FolderContentsPage() {
       const [folderRes, foldersRes, filesRes] = await Promise.all([
         supabase
           .from("folders")
-          .select("id,user_id,name,parent_id,color,icon,created_at")
+          .select("id,user_id,name,parent_id,color,icon,shape,sort_order,created_at")
           .eq("id", folderId)
           .single(),
         supabase
           .from("folders")
-          .select("id,user_id,name,parent_id,color,icon,created_at")
+          .select("id,user_id,name,parent_id,color,icon,shape,sort_order,created_at")
+          .order("sort_order", { ascending: true })
           .order("name", { ascending: true }),
         supabase
           .from("files")
@@ -129,6 +131,8 @@ export default function FolderContentsPage() {
         parent_id: folderId,
         color: null,
         icon: null,
+        shape: "soft",
+        sort_order: subfolders.length,
       });
       if (error) throw error;
 
@@ -232,32 +236,12 @@ export default function FolderContentsPage() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, idx) => (
-              <Skeleton key={idx} className="h-24 w-full rounded-xl" />
-            ))}
-          </div>
-        ) : subfolders.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {subfolders.map((item) => (
-              <Link key={item.id} href={`/folders/${item.id}`}>
-                <Card className="flex h-24 items-center gap-4 rounded-xl border border-nexus-border bg-nexus-surface p-4 transition-colors hover:border-nexus-orange">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-nexus-surface text-nexus-purple">
-                    <FolderIcon size={20} />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="truncate font-medium text-nexus-text">{item.name}</h3>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-xl border border-nexus-border bg-nexus-surface p-6 text-center text-nexus-muted">
-            No subfolders in this folder.
-          </div>
-        )}
+        <FolderManager
+          folders={subfolders}
+          loading={loading}
+          emptyText="No subfolders in this folder."
+          onChanged={fetchFolderData}
+        />
       </section>
 
       <section>

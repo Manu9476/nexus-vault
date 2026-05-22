@@ -100,7 +100,8 @@ export function FileUpload({
 
         const { data, error } = await supabase
           .from("folders")
-          .select("id,user_id,name,parent_id,color,icon,created_at")
+          .select("id,user_id,name,parent_id,color,icon,shape,sort_order,created_at")
+          .order("sort_order", { ascending: true })
           .order("name", { ascending: true });
 
         if (!mounted) return;
@@ -177,6 +178,8 @@ export function FileUpload({
         parent_id: parentId,
         color: null,
         icon: null,
+        shape: "soft",
+        sort_order: folders.filter((folder) => folder.parent_id === parentId).length,
       })
       .select("id")
       .single();

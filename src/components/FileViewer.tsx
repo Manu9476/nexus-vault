@@ -71,7 +71,8 @@ export function FileViewer({
     (async () => {
       const { data } = await supabase
         .from("folders")
-        .select("id,user_id,name,parent_id,color,icon,created_at")
+        .select("id,user_id,name,parent_id,color,icon,shape,sort_order,created_at")
+        .order("sort_order", { ascending: true })
         .order("name", { ascending: true });
       if (mounted) setFolders((data ?? []) as VaultFolder[]);
     })();

@@ -43,6 +43,8 @@ export interface VaultFolder {
   parent_id: string | null;
   color: string | null;
   icon: string | null;
+  shape: string | null;
+  sort_order: number | null;
   created_at: string;
 }
 

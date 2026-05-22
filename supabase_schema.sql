@@ -11,12 +11,16 @@ create table if not exists public.folders (
     parent_id uuid references public.folders(id) on delete set null,
     color text,
     icon text,
+    shape text default 'soft' not null,
+    sort_order integer default 0 not null,
     created_at timestamptz default now() not null
 );
 
 alter table public.folders add column if not exists parent_id uuid references public.folders(id) on delete set null;
 alter table public.folders add column if not exists color text;
 alter table public.folders add column if not exists icon text;
+alter table public.folders add column if not exists shape text default 'soft' not null;
+alter table public.folders add column if not exists sort_order integer default 0 not null;
 alter table public.folders add column if not exists created_at timestamptz default now() not null;
 alter table public.folders enable row level security;
 
@@ -112,6 +116,7 @@ create policy "Users can delete own files."
 
 create index if not exists folders_user_id_idx on public.folders(user_id);
 create index if not exists folders_parent_id_idx on public.folders(parent_id);
+create index if not exists folders_sort_order_idx on public.folders(parent_id, sort_order);
 create index if not exists files_user_id_idx on public.files(user_id);
 create index if not exists files_folder_id_idx on public.files(folder_id);
 create index if not exists files_tags_idx on public.files using gin(tags);
