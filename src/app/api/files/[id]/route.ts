@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServer } from "@/lib/supabase-admin";
+import { createSupabaseServer } from "@/lib/supabase";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createSupabaseServer();
+    const { id } = await context.params;
+    const supabase = await createSupabaseServer();
+    if (!supabase) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { data: userData, error: authError } = await supabase.auth.getUser();
 
     if (authError || !userData?.user) {
@@ -24,7 +29,7 @@ export async function PATCH(
         tags,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", params.id)
+      .eq("id", id)
       .eq("user_id", userData.user.id);
 
     if (updateError) {

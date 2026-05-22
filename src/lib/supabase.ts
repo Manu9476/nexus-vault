@@ -13,7 +13,7 @@ export async function createSupabaseServer() {
   // `next/headers` is server-only; load it lazily so this file can be imported by
   // client components safely (e.g. `/login`).
   const { cookies } = await import("next/headers");
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {

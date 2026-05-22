@@ -16,6 +16,21 @@ function formatBytes(bytes: number) {
   return `${val.toFixed(val >= 10 || idx === 0 ? 0 : 1)} ${units[idx]}`;
 }
 
+type RecentFile = {
+  id: string;
+  name: string;
+  file_type: string;
+  created_at: string;
+  size_bytes: number;
+  folder_id: string | null;
+  tags: string[] | null;
+  description: string | null;
+};
+
+type StorageUsageRow = {
+  size_bytes: number | string | null;
+};
+
 export default function DashboardPage() {
   const supabase = useMemo(() => createSupabaseBrowser(), []);
 
@@ -26,18 +41,7 @@ export default function DashboardPage() {
     documents: 0,
     storageUsedBytes: 0,
   });
-  const [recent, setRecent] = useState<
-    Array<{
-      id: string;
-      name: string;
-      file_type: string;
-      created_at: string;
-      size_bytes: number;
-      folder_id: string | null;
-      tags: string[] | null;
-      description: string | null;
-    }>
-  >([]);
+  const [recent, setRecent] = useState<RecentFile[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -85,7 +89,11 @@ export default function DashboardPage() {
             .limit(10),
         ]);
 
-        const totalBytes = storageBytesRes.data?.reduce((acc, curr) => acc + (Number(curr.size_bytes) || 0), 0) || 0;
+        const storageRows = (storageBytesRes.data ?? []) as StorageUsageRow[];
+        const totalBytes = storageRows.reduce(
+          (acc, curr) => acc + (Number(curr.size_bytes) || 0),
+          0
+        );
 
         const nextStats = {
           totalFiles: totalFilesRes.count ?? 0,
@@ -96,7 +104,7 @@ export default function DashboardPage() {
 
         if (!mounted) return;
         setStats(nextStats);
-        setRecent((recentRes.data ?? []) as any);
+        setRecent((recentRes.data ?? []) as RecentFile[]);
       } catch (e) {
         // We'll render skeleton/empty state if backend isn't configured yet.
         if (!mounted) return;
