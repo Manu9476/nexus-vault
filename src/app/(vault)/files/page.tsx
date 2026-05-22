@@ -21,6 +21,7 @@ export default function FilesPage() {
 	const [files, setFiles] = useState<FileCardModel[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [view, setView] = useState<"grid" | "list">("grid");
+	const [uploadOpen, setUploadOpen] = useState(false);
 
 	const [query, setQuery] = useState("");
 	const [category, setCategory] = useState<"all" | VaultFileType>("all");
@@ -102,6 +103,14 @@ export default function FilesPage() {
 
 					<div className="flex items-center gap-2">
 						<Button
+							type="button"
+							variant={uploadOpen ? "secondary" : "default"}
+							size="sm"
+							onClick={() => setUploadOpen((open) => !open)}
+						>
+							{uploadOpen ? "Close upload" : "Upload"}
+						</Button>
+						<Button
 							variant={view === "grid" ? "secondary" : "outline"}
 							size="sm"
 							onClick={() => setView("grid")}
@@ -119,7 +128,32 @@ export default function FilesPage() {
 				</div>
 			</header>
 
-			<FileUpload onUploaded={fetchFiles} />
+			{uploadOpen ? (
+				<section className="space-y-3">
+					<div className="flex items-center justify-between">
+						<div>
+							<h2 className="font-display text-xl tracking-wide">Upload panel</h2>
+							<p className="mt-1 text-sm text-zinc-400">
+								Add files, then return to the file list below.
+							</p>
+						</div>
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={() => setUploadOpen(false)}
+						>
+							Close
+						</Button>
+					</div>
+					<FileUpload
+						onUploaded={() => {
+							fetchFiles();
+							setUploadOpen(false);
+						}}
+					/>
+				</section>
+			) : null}
 
 			<section>
 				<div className="mb-3 flex items-baseline justify-between">
@@ -142,7 +176,7 @@ export default function FilesPage() {
 					</Card>
 				) : files.length === 0 ? (
 					<div className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-8 text-center text-zinc-400">
-						No files found. Upload something above to start building your vault.
+						No files found. Use the Upload button to add something to your vault.
 					</div>
 				) : (
 					<FileGrid

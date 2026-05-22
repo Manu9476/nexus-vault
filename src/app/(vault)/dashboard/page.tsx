@@ -124,7 +124,8 @@ export default function DashboardPage() {
       </header>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Link href="/files" className="block">
+        <Card className="h-full transition-colors hover:border-zinc-700 hover:bg-zinc-900/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-normal text-zinc-400">Total files</CardTitle>
           </CardHeader>
@@ -136,8 +137,10 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        </Link>
 
-        <Card>
+        <Link href="/photos" className="block">
+        <Card className="h-full transition-colors hover:border-zinc-700 hover:bg-zinc-900/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-normal text-zinc-400">Photos</CardTitle>
           </CardHeader>
@@ -149,8 +152,10 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        </Link>
 
-        <Card>
+        <Link href="/documents" className="block">
+        <Card className="h-full transition-colors hover:border-zinc-700 hover:bg-zinc-900/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-normal text-zinc-400">Documents</CardTitle>
           </CardHeader>
@@ -162,8 +167,10 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        </Link>
 
-        <Card>
+        <Link href="/gallery" className="block">
+        <Card className="h-full transition-colors hover:border-zinc-700 hover:bg-zinc-900/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-normal text-zinc-400">Storage used</CardTitle>
           </CardHeader>
@@ -175,6 +182,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        </Link>
       </div>
 
       <section>
