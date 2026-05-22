@@ -14,12 +14,18 @@ import {
 import {
   academicSemesters,
   academicYears,
+  buildSearchText,
+  buildStructuredCategory,
   buildStructuredDescription,
-  buildStructuredFolderName,
+  buildStructuredDocumentType,
+  buildStructuredFolderPath,
   buildStructuredTags,
   buildStructuredTitle,
+  customDocumentName,
   personalRecordTypes,
+  requiresCustomDocumentName,
   uploadModes,
+  usesPersonalRecordType,
   type PersonalRecordType,
   type StructuredUploadMeta,
   type UploadMode,
@@ -63,10 +69,13 @@ export function FileUpload({
     structured: {
       mode: preferences.defaultUploadMode,
       personalRecordType: "birth-certificate",
+      customDocumentName: "",
       academicYear: "1",
       semester: "1",
       courseCode: "",
       courseTitle: "",
+      institution: "",
+      documentDate: "",
     },
   });
 
@@ -91,8 +100,8 @@ export function FileUpload({
 
         const { data, error } = await supabase
           .from("folders")
-          .select("id,user_id,name,color,icon,created_at")
-          .order("created_at", { ascending: false });
+          .select("id,user_id,name,parent_id,color,icon,created_at")
+          .order("name", { ascending: true });
 
         if (!mounted) return;
         if (error) throw error;
@@ -109,6 +118,29 @@ export function FileUpload({
     };
   }, [supabase]);
 
+  useEffect(() => {
+    setMeta((current) => {
+      const mode = current.structured.mode;
+      const currentType = current.structured.personalRecordType;
+      if (
+        mode === "identity-documents" &&
+        !["birth-certificate", "national-id", "driving-license"].includes(currentType)
+      ) {
+        return {
+          ...current,
+          structured: { ...current.structured, personalRecordType: "birth-certificate" },
+        };
+      }
+      if (mode === "certificates" && !["kcse-certificate", "certificate"].includes(currentType)) {
+        return {
+          ...current,
+          structured: { ...current.structured, personalRecordType: "kcse-certificate" },
+        };
+      }
+      return current;
+    });
+  }, [meta.structured.mode]);
+
   function updateStructured<K extends keyof StructuredUploadMeta>(
     key: K,
     value: StructuredUploadMeta[K]
@@ -122,13 +154,17 @@ export function FileUpload({
     }));
   }
 
-  async function getOrCreateFolder(userId: string, folderName: string) {
-    const { data: existing, error: existingErr } = await supabase
+  async function getOrCreateFolder(userId: string, folderName: string, parentId: string | null) {
+    let query = supabase
       .from("folders")
       .select("id")
       .eq("user_id", userId)
       .eq("name", folderName)
-      .maybeSingle();
+      .limit(1);
+
+    query = parentId ? query.eq("parent_id", parentId) : query.is("parent_id", null);
+
+    const { data: existing, error: existingErr } = await query.maybeSingle();
 
     if (existingErr) throw existingErr;
     if (existing?.id) return existing.id as string;
@@ -138,6 +174,7 @@ export function FileUpload({
       .insert({
         user_id: userId,
         name: folderName,
+        parent_id: parentId,
         color: null,
         icon: null,
       })
@@ -148,6 +185,43 @@ export function FileUpload({
     return created.id as string;
   }
 
+  async function getOrCreateFolderPath(userId: string, folderPath: string[] | null) {
+    if (!folderPath?.length) return null;
+    let parentId: string | null = null;
+    for (const folderName of folderPath) {
+      parentId = await getOrCreateFolder(userId, folderName, parentId);
+    }
+    return parentId;
+  }
+
+  function folderPathLabel(folder: VaultFolder) {
+    const byId = new Map(folders.map((item) => [item.id, item]));
+    const parts = [folder.name];
+    let parentId = folder.parent_id;
+    const seen = new Set<string>([folder.id]);
+
+    while (parentId && !seen.has(parentId)) {
+      const parent = byId.get(parentId);
+      if (!parent) break;
+      parts.unshift(parent.name);
+      seen.add(parent.id);
+      parentId = parent.parent_id;
+    }
+
+    return parts.join(" / ");
+  }
+
+  const folderOptions = useMemo(
+    () =>
+      folders
+        .map((folder) => ({
+          ...folder,
+          label: folderPathLabel(folder),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [folders]
+  );
+
   async function uploadFiles(files: FileList | File[]) {
     if (!supabase) {
       toast.error("Supabase is not configured yet.");
@@ -156,6 +230,11 @@ export function FileUpload({
 
     const fileArr = Array.from(files);
     if (fileArr.length === 0) return;
+
+    if (requiresCustomDocumentName(meta.structured) && !customDocumentName(meta.structured)) {
+      toast.error("Write what this other document is before uploading.");
+      return;
+    }
 
     const { data: authRes, error: userErr } = await supabase.auth.getUser();
     if (userErr || !authRes.user) {
@@ -166,16 +245,11 @@ export function FileUpload({
     const user = authRes.user;
     const tags = buildStructuredTags(meta.structured, parseTagsInput(meta.tagsInput));
     const generatedDescription = buildStructuredDescription(meta.structured);
+    const folderCache = new Map<string, string | null>();
 
     setIsUploading(true);
     try {
       const uploaded: string[] = [];
-      let targetFolderId = meta.folderId;
-      const autoFolderName = buildStructuredFolderName(meta.structured);
-
-      if (!targetFolderId && meta.autoOrganize && autoFolderName) {
-        targetFolderId = await getOrCreateFolder(user.id, autoFolderName);
-      }
 
       for (let index = 0; index < fileArr.length; index++) {
         const file = fileArr[index];
@@ -192,6 +266,16 @@ export function FileUpload({
           fileName: originalFilename,
           mimeType: file.type,
         });
+        let targetFolderId = meta.folderId;
+        const autoFolderPath = buildStructuredFolderPath(meta.structured, fileType);
+
+        if (!targetFolderId && meta.autoOrganize && autoFolderPath?.length) {
+          const cacheKey = autoFolderPath.join("/");
+          if (!folderCache.has(cacheKey)) {
+            folderCache.set(cacheKey, await getOrCreateFolderPath(user.id, autoFolderPath));
+          }
+          targetFolderId = folderCache.get(cacheKey) ?? null;
+        }
 
         // Upload to Supabase Storage.
         const { error: storageErr } = await supabase.storage
@@ -215,6 +299,21 @@ export function FileUpload({
         const description = [generatedDescription, meta.description.trim()]
           .filter(Boolean)
           .join("\n");
+        const category = buildStructuredCategory(meta.structured, fileType);
+        const documentType = buildStructuredDocumentType(meta.structured, fileType);
+        const customTypeLabel = customDocumentName(meta.structured) || null;
+        const isAcademic = meta.structured.mode.startsWith("academic");
+        const searchText = buildSearchText({
+          title,
+          originalFilename,
+          description: description || null,
+          tags,
+          category,
+          documentType,
+          customTypeLabel,
+          folderPath: autoFolderPath ?? [],
+          meta: meta.structured,
+        });
 
         const { error: insertErr } = await supabase.from("files").insert({
           id: fileId,
@@ -227,8 +326,18 @@ export function FileUpload({
           mime_type: file.type || null,
           size_bytes: file.size,
           folder_id: targetFolderId,
+          category,
+          document_type: documentType,
+          custom_type_label: customTypeLabel,
           description: description || null,
           tags: tags.length ? tags : [],
+          search_text: searchText,
+          document_date: meta.structured.documentDate || null,
+          academic_year: isAcademic ? meta.structured.academicYear || null : null,
+          semester: isAcademic ? meta.structured.semester || null : null,
+          course_code: isAcademic ? meta.structured.courseCode.trim() || null : null,
+          course_title: isAcademic ? meta.structured.courseTitle.trim() || null : null,
+          institution: meta.structured.institution.trim() || null,
         });
 
         if (insertErr) throw insertErr;
@@ -236,7 +345,16 @@ export function FileUpload({
       }
 
       toast.success(`Uploaded ${uploaded.length} file${uploaded.length === 1 ? "" : "s"}.`);
-      setMeta((m) => ({ ...m, titlePrefix: "", description: "", tagsInput: "" }));
+      setMeta((m) => ({
+        ...m,
+        titlePrefix: "",
+        description: "",
+        tagsInput: "",
+        structured: {
+          ...m.structured,
+          customDocumentName: "",
+        },
+      }));
       onUploaded?.();
     } catch (err: any) {
       toast.error(err?.message ?? "Upload failed.");
@@ -257,6 +375,19 @@ export function FileUpload({
     e.preventDefault();
     e.stopPropagation();
   }
+
+  const needsCustomDocumentName = requiresCustomDocumentName(meta.structured);
+  const usesRecordType = usesPersonalRecordType(meta.structured.mode);
+  const suggestedFolderPath = buildStructuredFolderPath(meta.structured)?.join(" / ");
+  const recordTypeOptions = personalRecordTypes.filter((type) => {
+    if (meta.structured.mode === "identity-documents") {
+      return ["birth-certificate", "national-id", "driving-license"].includes(type.value);
+    }
+    if (meta.structured.mode === "certificates") {
+      return ["kcse-certificate", "certificate"].includes(type.value);
+    }
+    return true;
+  });
 
   return (
     <Card className="border-nexus-border bg-nexus-surface">
@@ -342,15 +473,18 @@ export function FileUpload({
                 <option value="">
                   {meta.autoOrganize ? "Auto folder" : "Unsorted"}
                 </option>
-                {folders.map((f) => (
+                {folderOptions.map((f) => (
                   <option key={f.id} value={f.id}>
-                    {f.name}
+                    {f.label}
                   </option>
                 ))}
               </select>
+              {suggestedFolderPath && !meta.folderId ? (
+                <p className="text-xs text-nexus-muted">Suggested: {suggestedFolderPath}</p>
+              ) : null}
             </div>
 
-            {meta.structured.mode === "personal-record" ? (
+            {usesRecordType ? (
               <div className="space-y-2 md:col-span-2">
                 <div className="text-xs text-nexus-muted">Record type</div>
                 <select
@@ -361,12 +495,25 @@ export function FileUpload({
                   }
                   disabled={isUploading}
                 >
-                  {personalRecordTypes.map((type) => (
+                  {recordTypeOptions.map((type) => (
                     <option key={type.value} value={type.value}>
                       {type.label}
                     </option>
                   ))}
                 </select>
+              </div>
+            ) : null}
+
+            {needsCustomDocumentName ? (
+              <div className="space-y-2 md:col-span-2">
+                <div className="text-xs text-nexus-muted">What is this document?</div>
+                <Input
+                  value={meta.structured.customDocumentName}
+                  onChange={(e) => updateStructured("customDocumentName", e.target.value)}
+                  placeholder="e.g. Passport, school leaving certificate, fee statement"
+                  disabled={isUploading}
+                  required
+                />
               </div>
             ) : null}
 
@@ -425,6 +572,26 @@ export function FileUpload({
                 </div>
               </>
             ) : null}
+
+            <div className="space-y-2">
+              <div className="text-xs text-nexus-muted">Institution / organization</div>
+              <Input
+                value={meta.structured.institution}
+                onChange={(e) => updateStructured("institution", e.target.value)}
+                placeholder="e.g. KNEC, NTSA, University"
+                disabled={isUploading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs text-nexus-muted">Document date</div>
+              <Input
+                type="date"
+                value={meta.structured.documentDate}
+                onChange={(e) => updateStructured("documentDate", e.target.value)}
+                disabled={isUploading}
+              />
+            </div>
 
             {!defaultFolderId ? (
               <label className="flex items-center gap-2 rounded-xl border border-nexus-border px-3 py-2 text-sm text-nexus-muted md:col-span-2">

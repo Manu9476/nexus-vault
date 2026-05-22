@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowser } from "@/lib/supabase";
 import { matchesVaultSearch } from "@/lib/vaultTaxonomy";
 import { getVaultPreferences, saveVaultPreferences } from "@/lib/vaultSettings";
-import type { VaultFileType } from "@/types";
 import { FileUpload } from "@/components/FileUpload";
 import { FileGrid } from "@/components/FileGrid";
 import { FileViewer } from "@/components/FileViewer";
@@ -15,6 +14,19 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+
+type CategoryFilter =
+	| "all"
+	| "image"
+	| "document"
+	| "video"
+	| "other-file"
+	| "personal-documents"
+	| "academic"
+	| "finance"
+	| "medical"
+	| "legal"
+	| "other";
 
 export default function FilesPage() {
 	const supabase = useMemo(() => createSupabaseBrowser(), []);
@@ -26,7 +38,7 @@ export default function FilesPage() {
 	const [uploadOpen, setUploadOpen] = useState(false);
 
 	const [query, setQuery] = useState("");
-	const [category, setCategory] = useState<"all" | VaultFileType>("all");
+	const [category, setCategory] = useState<CategoryFilter>("all");
 
 	const [viewerOpen, setViewerOpen] = useState(false);
 	const [viewerFileId, setViewerFileId] = useState<string | null>(null);
@@ -55,10 +67,14 @@ export default function FilesPage() {
 		try {
 			let q = supabase
 				.from("files")
-				.select("id,name,file_type,mime_type,size_bytes,created_at,folder_id,tags,description");
+				.select("id,name,file_type,mime_type,size_bytes,created_at,folder_id,tags,description,category,document_type,custom_type_label,search_text,academic_year,semester,course_code,course_title,institution,folders(name)");
 
-			if (category !== "all") {
+			if (["image", "document", "video"].includes(category)) {
 				q = q.eq("file_type", category);
+			} else if (category === "other-file") {
+				q = q.eq("file_type", "other");
+			} else if (category !== "all") {
+				q = q.eq("category", category);
 			}
 
 			const { data, error } = await q.order("created_at", { ascending: false }).limit(500);
@@ -102,13 +118,19 @@ export default function FilesPage() {
 					<select
 						className="h-10 rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
 						value={category}
-						onChange={(e) => setCategory(e.target.value as any)}
+						onChange={(e) => setCategory(e.target.value as CategoryFilter)}
 					>
 						<option value="all">All categories</option>
+						<option value="personal-documents">Personal Documents</option>
+						<option value="academic">Academic</option>
+						<option value="finance">Finance</option>
+						<option value="medical">Medical</option>
+						<option value="legal">Legal</option>
 						<option value="image">Photos</option>
 						<option value="document">Documents</option>
 						<option value="video">Videos</option>
-						<option value="other">Other</option>
+						<option value="other">Other Documents</option>
+						<option value="other-file">Other Files</option>
 					</select>
 
 					<div className="flex items-center gap-2">

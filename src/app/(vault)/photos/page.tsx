@@ -85,7 +85,7 @@ export default function PhotosPage() {
 
         const { data, error } = await supabase
           .from("files")
-          .select("id,name,created_at,file_type,mime_type,size_bytes,folder_id,tags,description")
+          .select("id,name,created_at,file_type,mime_type,size_bytes,folder_id,tags,description,category,document_type,custom_type_label,search_text,academic_year,semester,course_code,course_title,institution,folders(name)")
           .eq("file_type", "image")
           .order("created_at", { ascending: false })
           .limit(200);

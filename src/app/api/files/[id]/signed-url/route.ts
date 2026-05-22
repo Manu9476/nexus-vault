@@ -27,7 +27,7 @@ export async function GET(
   const { data: file, error: fileErr } = await supabase
     .from("files")
     .select(
-      "id,user_id,storage_path,file_type,mime_type,size_bytes,name,created_at,folder_id,description,tags"
+      "id,user_id,storage_path,file_type,mime_type,size_bytes,name,created_at,folder_id,description,tags,category,document_type,custom_type_label,document_date,academic_year,semester,course_code,course_title,institution,favorite,archived,folders(name)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -55,6 +55,18 @@ export async function GET(
       folder_id: file.folder_id,
       description: file.description,
       tags: file.tags,
+      category: file.category,
+      document_type: file.document_type,
+      custom_type_label: file.custom_type_label,
+      document_date: file.document_date,
+      academic_year: file.academic_year,
+      semester: file.semester,
+      course_code: file.course_code,
+      course_title: file.course_title,
+      institution: file.institution,
+      favorite: file.favorite,
+      archived: file.archived,
+      folders: file.folders,
     },
   });
 }

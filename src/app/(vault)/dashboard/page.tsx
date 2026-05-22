@@ -67,7 +67,7 @@ export default function DashboardPage() {
             supabase.from("files").select("size_bytes"),
             supabase
               .from("files")
-              .select("id,name,file_type,mime_type,created_at,size_bytes,folder_id,tags,description")
+              .select("id,name,file_type,mime_type,created_at,size_bytes,folder_id,tags,description,category,document_type,custom_type_label,search_text,academic_year,semester,course_code,course_title,institution,folders(name)")
               .order("created_at", { ascending: false })
               .limit(10),
           ]);
@@ -115,7 +115,7 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/organizer"
+            href="/upload"
             className="inline-flex h-10 items-center justify-center rounded-full bg-nexus-orange px-4 text-sm font-bold text-white transition-colors hover:bg-nexus-orange"
           >
             Quick Upload

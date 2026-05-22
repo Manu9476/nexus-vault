@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { toast } from "sonner";
 
+import { createSupabaseBrowser } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import type { VaultFolder } from "@/types";
 
 type ViewerFile = {
   id: string;
@@ -20,6 +22,18 @@ type ViewerFile = {
   folder_id: string | null;
   description: string | null;
   tags: string[] | null;
+  category: string | null;
+  document_type: string | null;
+  custom_type_label: string | null;
+  document_date: string | null;
+  academic_year: string | null;
+  semester: string | null;
+  course_code: string | null;
+  course_title: string | null;
+  institution: string | null;
+  favorite: boolean;
+  archived: boolean;
+  folders?: { name?: string | null } | null;
 };
 
 export function FileViewer({
@@ -40,6 +54,32 @@ export function FileViewer({
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editTags, setEditTags] = useState("");
+  const [editFolderId, setEditFolderId] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editDocumentType, setEditDocumentType] = useState("");
+  const [editCustomTypeLabel, setEditCustomTypeLabel] = useState("");
+  const [editDocumentDate, setEditDocumentDate] = useState("");
+  const [editInstitution, setEditInstitution] = useState("");
+  const [folders, setFolders] = useState<VaultFolder[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    let mounted = true;
+    const supabase = createSupabaseBrowser();
+    if (!supabase) return;
+
+    (async () => {
+      const { data } = await supabase
+        .from("folders")
+        .select("id,user_id,name,parent_id,color,icon,created_at")
+        .order("name", { ascending: true });
+      if (mounted) setFolders((data ?? []) as VaultFolder[]);
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open || !fileId) return;
@@ -63,6 +103,12 @@ export function FileViewer({
           setEditName(fetchedFile.name);
           setEditDescription(fetchedFile.description ?? "");
           setEditTags(fetchedFile.tags?.join(", ") ?? "");
+          setEditFolderId(fetchedFile.folder_id ?? "");
+          setEditCategory(fetchedFile.category ?? "");
+          setEditDocumentType(fetchedFile.document_type ?? "");
+          setEditCustomTypeLabel(fetchedFile.custom_type_label ?? "");
+          setEditDocumentDate(fetchedFile.document_date ?? "");
+          setEditInstitution(fetchedFile.institution ?? "");
         }
       } catch (err: any) {
         toast.error(err?.message ?? "Failed to load file preview");
@@ -111,6 +157,18 @@ export function FileViewer({
           name: editName,
           description: editDescription,
           tags: tagsArray.length > 0 ? tagsArray : null,
+          folder_id: editFolderId || null,
+          category: editCategory || null,
+          document_type: editDocumentType || null,
+          custom_type_label: editCustomTypeLabel || null,
+          document_date: editDocumentDate || null,
+          academic_year: file.academic_year,
+          semester: file.semester,
+          course_code: file.course_code,
+          course_title: file.course_title,
+          institution: editInstitution || null,
+          favorite: file.favorite,
+          archived: file.archived,
         }),
       });
 
@@ -121,6 +179,12 @@ export function FileViewer({
         name: editName,
         description: editDescription || null,
         tags: tagsArray.length > 0 ? tagsArray : null,
+        folder_id: editFolderId || null,
+        category: editCategory || null,
+        document_type: editDocumentType || null,
+        custom_type_label: editCustomTypeLabel || null,
+        document_date: editDocumentDate || null,
+        institution: editInstitution || null,
       });
       setIsEditing(false);
       toast.success("File updated.");
@@ -132,6 +196,7 @@ export function FileViewer({
 
   const canPreviewImage = file?.file_type === "image" && signedUrl;
   const canPreviewPdf = file?.mime_type === "application/pdf" && signedUrl;
+  const folderName = file?.folders?.name ?? "Unsorted";
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -223,6 +288,69 @@ export function FileViewer({
                           />
                         </div>
                         <div>
+                          <label className="text-xs text-nexus-muted">Folder</label>
+                          <select
+                            className="mt-1 flex h-10 w-full rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
+                            value={editFolderId}
+                            onChange={(e) => setEditFolderId(e.target.value)}
+                          >
+                            <option value="">Unsorted</option>
+                            {folders.map((folder) => (
+                              <option key={folder.id} value={folder.id}>
+                                {folder.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <label className="text-xs text-nexus-muted">Category</label>
+                            <Input
+                              value={editCategory}
+                              onChange={(e) => setEditCategory(e.target.value)}
+                              className="mt-1"
+                              placeholder="personal-documents"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-nexus-muted">Document type</label>
+                            <Input
+                              value={editDocumentType}
+                              onChange={(e) => setEditDocumentType(e.target.value)}
+                              className="mt-1"
+                              placeholder="kcse-certificate"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs text-nexus-muted">Custom label</label>
+                          <Input
+                            value={editCustomTypeLabel}
+                            onChange={(e) => setEditCustomTypeLabel(e.target.value)}
+                            className="mt-1"
+                            placeholder="Passport, transcript, fee statement"
+                          />
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <label className="text-xs text-nexus-muted">Institution</label>
+                            <Input
+                              value={editInstitution}
+                              onChange={(e) => setEditInstitution(e.target.value)}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-nexus-muted">Document date</label>
+                            <Input
+                              type="date"
+                              value={editDocumentDate}
+                              onChange={(e) => setEditDocumentDate(e.target.value)}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                        <div>
                           <label className="text-xs text-nexus-muted">Description</label>
                           <Textarea
                             value={editDescription}
@@ -253,8 +381,22 @@ export function FileViewer({
                         <Card className="border-nexus-border bg-nexus-surface p-3">
                           <div className="text-xs text-nexus-muted">Type</div>
                           <div className="mt-1">
-                            <Badge>{file.file_type}</Badge>
+                            <Badge>{file.custom_type_label ?? file.document_type ?? file.file_type}</Badge>
                           </div>
+                          <div className="mt-3 text-xs text-nexus-muted">Folder</div>
+                          <div className="mt-1 text-sm">{folderName}</div>
+                          {file.category ? (
+                            <>
+                              <div className="mt-3 text-xs text-nexus-muted">Category</div>
+                              <div className="mt-1 text-sm">{file.category}</div>
+                            </>
+                          ) : null}
+                          {file.institution ? (
+                            <>
+                              <div className="mt-3 text-xs text-nexus-muted">Institution</div>
+                              <div className="mt-1 text-sm">{file.institution}</div>
+                            </>
+                          ) : null}
                           <div className="mt-3 text-xs text-nexus-muted">Size</div>
                           <div className="mt-1 text-sm">{file.size_bytes} bytes</div>
                         </Card>

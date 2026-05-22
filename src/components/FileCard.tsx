@@ -5,6 +5,7 @@ import { File, FileText, Image as ImageIcon, Video } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { formatBytes } from "@/lib/fileHelpers";
 
 export type FileCardModel = {
   id: string;
@@ -16,6 +17,16 @@ export type FileCardModel = {
   tags: string[] | null;
   description: string | null;
   folder_id: string | null;
+  category?: string | null;
+  document_type?: string | null;
+  custom_type_label?: string | null;
+  search_text?: string | null;
+  academic_year?: string | null;
+  semester?: string | null;
+  course_code?: string | null;
+  course_title?: string | null;
+  institution?: string | null;
+  folders?: { name?: string | null } | null;
 };
 
 export function FileCard({
@@ -69,6 +80,8 @@ export function FileCard({
   }, [file.id, shouldPreview]);
 
   const created = useMemo(() => new Date(file.created_at).toLocaleDateString(), [file.created_at]);
+  const primaryBadge = file.custom_type_label ?? file.document_type ?? file.file_type;
+  const locationHint = file.folders?.name ?? file.category ?? file.file_type;
 
   return (
     <Card
@@ -112,10 +125,13 @@ export function FileCard({
         <div className="mt-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{file.name}</div>
-            <div className="mt-1 text-xs text-nexus-muted">{created}</div>
+            <div className="mt-1 truncate text-xs text-nexus-muted">
+              {created} - {formatBytes(file.size_bytes)}
+            </div>
+            <div className="mt-1 truncate text-xs text-nexus-muted">{locationHint}</div>
           </div>
 
-          <Badge className="shrink-0">{file.file_type}</Badge>
+          <Badge className="max-w-[120px] shrink-0 truncate">{primaryBadge}</Badge>
         </div>
 
         {file.tags?.length ? (

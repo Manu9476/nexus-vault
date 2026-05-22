@@ -32,7 +32,8 @@ export default function FoldersPage() {
       const { data, error } = await supabase
         .from("folders")
         .select("*")
-        .order("created_at", { ascending: false });
+        .is("parent_id", null)
+        .order("name", { ascending: true });
       if (error) throw error;
       setFolders((data ?? []) as VaultFolder[]);
     } catch (err: any) {
@@ -64,6 +65,7 @@ export default function FoldersPage() {
       const { error } = await supabase.from("folders").insert({
         user_id: userId,
         name: newFolderName.trim(),
+        parent_id: null,
         color: null,
         icon: null,
       });
@@ -85,7 +87,7 @@ export default function FoldersPage() {
         <div>
           <h1 className="font-display text-3xl font-extrabold">Folders</h1>
           <p className="mt-1 text-sm text-nexus-muted">
-            Create and manage your collections.
+            Browse your vault from broad collections down to the final document.
           </p>
         </div>
       </header>

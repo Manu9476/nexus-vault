@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { createSupabaseBrowser } from "@/lib/supabase";
 import {
+  recommendedVaultFolderPaths,
   recommendedVaultFolders,
   uploadModes,
   type UploadMode,
@@ -23,7 +24,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type FolderNameRow = {
+  id: string;
   name: string;
+  parent_id: string | null;
 };
 
 export default function SettingsPage() {
@@ -103,35 +106,53 @@ export default function SettingsPage() {
 
       const { data: existingFolders, error: fetchError } = await supabase
         .from("folders")
-        .select("name")
+        .select("id,name,parent_id")
         .eq("user_id", user.id);
 
       if (fetchError) throw fetchError;
 
-      const existing = new Set(
-        ((existingFolders ?? []) as FolderNameRow[]).map((folder) => folder.name)
-      );
-      const missing = recommendedVaultFolders.filter((folderName) => !existing.has(folderName));
+      const knownFolders = [...((existingFolders ?? []) as FolderNameRow[])];
+      let createdCount = 0;
 
-      if (!missing.length) {
+      async function ensureFolder(name: string, parentId: string | null) {
+        const existing = knownFolders.find(
+          (folder) => folder.name === name && folder.parent_id === parentId
+        );
+        if (existing) return existing.id;
+
+        const { data: created, error: insertError } = await supabase
+          .from("folders")
+          .insert({
+            user_id: user.id,
+            name,
+            parent_id: parentId,
+            color: null,
+            icon: null,
+          })
+          .select("id,name,parent_id")
+          .single();
+
+        if (insertError) throw insertError;
+        knownFolders.push(created as FolderNameRow);
+        createdCount += 1;
+        return created.id as string;
+      }
+
+      for (const path of recommendedVaultFolderPaths) {
+        let parentId: string | null = null;
+        for (const folderName of path) {
+          parentId = await ensureFolder(folderName, parentId);
+        }
+      }
+
+      if (!createdCount) {
         setLastFolderSetup("All recommended folders already exist.");
         toast.success("Your folder structure is already ready.");
         return;
       }
 
-      const { error: insertError } = await supabase.from("folders").insert(
-        missing.map((name) => ({
-          user_id: user.id,
-          name,
-          color: null,
-          icon: null,
-        }))
-      );
-
-      if (insertError) throw insertError;
-
-      setLastFolderSetup(`Created ${missing.length} folder${missing.length === 1 ? "" : "s"}.`);
-      toast.success(`Created ${missing.length} folder${missing.length === 1 ? "" : "s"}.`);
+      setLastFolderSetup(`Created ${createdCount} folder${createdCount === 1 ? "" : "s"}.`);
+      toast.success(`Created ${createdCount} folder${createdCount === 1 ? "" : "s"}.`);
     } catch (err: any) {
       toast.error(err?.message ?? "Failed to create folders.");
     } finally {

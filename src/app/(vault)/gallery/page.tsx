@@ -41,7 +41,7 @@ export default function GalleryPage() {
       try {
         let query = supabase
           .from("files")
-          .select("id,name,file_type,mime_type,size_bytes,created_at,folder_id,tags,description");
+          .select("id,name,file_type,mime_type,size_bytes,created_at,folder_id,tags,description,category,document_type,custom_type_label,search_text,academic_year,semester,course_code,course_title,institution,folders(name)");
 
         if (filter !== "all") query = query.eq("file_type", filter);
 

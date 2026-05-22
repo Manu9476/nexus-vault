@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutGrid,
+  Upload,
   Image as ImageIcon,
   FileText,
   Folder,
@@ -20,6 +21,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/organizer", label: "Organizer", icon: Archive },
+  { href: "/upload", label: "Upload", icon: Upload },
   { href: "/gallery", label: "Gallery", icon: Images },
   { href: "/files", label: "All Files", icon: LayoutGrid },
   { href: "/photos", label: "Photos", icon: ImageIcon },

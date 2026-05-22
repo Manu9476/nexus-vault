@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutGrid,
+  Upload,
   Home,
   Image as ImageIcon,
   Archive,
@@ -17,6 +18,7 @@ import {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/organizer", label: "Organizer", icon: Archive },
+  { href: "/upload", label: "Upload", icon: Upload },
   { href: "/gallery", label: "Gallery", icon: Images },
   { href: "/files", label: "Files", icon: LayoutGrid },
   { href: "/photos", label: "Photos", icon: ImageIcon },
