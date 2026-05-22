@@ -11,6 +11,7 @@ import {
   Settings,
   Home,
   Archive,
+  Images,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/organizer", label: "Organizer", icon: Archive },
+  { href: "/gallery", label: "Gallery", icon: Images },
   { href: "/files", label: "All Files", icon: LayoutGrid },
   { href: "/photos", label: "Photos", icon: ImageIcon },
   { href: "/documents", label: "Documents", icon: FileText },

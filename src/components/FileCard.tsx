@@ -25,15 +25,22 @@ export function FileCard({
   onOpen: (id: string) => void;
 }) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [previewChecked, setPreviewChecked] = useState(false);
 
   const isPdf = file.mime_type === "application/pdf";
-  const shouldPreview = file.file_type === "image" || isPdf;
+  const isDocument = file.file_type === "document";
+  const shouldPreview = file.file_type === "image" || isDocument;
   const pdfPreviewUrl = signedUrl ? `${signedUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1` : null;
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      if (!shouldPreview) return;
+      setPreviewChecked(false);
+      setSignedUrl(null);
+      if (!shouldPreview) {
+        setPreviewChecked(true);
+        return;
+      }
       try {
         const res = await fetch(`/api/files/${file.id}/signed-url`, {
           method: "GET",
@@ -43,6 +50,8 @@ export function FileCard({
         if (mounted) setSignedUrl(json?.signedUrl ?? null);
       } catch {
         // ignore
+      } finally {
+        if (mounted) setPreviewChecked(true);
       }
     })();
     return () => {
@@ -70,7 +79,7 @@ export function FileCard({
             alt={file.name}
             className="h-32 w-full rounded-lg border border-zinc-800 object-cover"
           />
-        ) : isPdf && pdfPreviewUrl ? (
+        ) : (isPdf || isDocument) && pdfPreviewUrl ? (
           <div className="h-32 overflow-hidden rounded-lg border border-zinc-800 bg-white">
             <iframe
               src={pdfPreviewUrl}
@@ -78,6 +87,10 @@ export function FileCard({
               className="pointer-events-none h-[210px] w-full origin-top scale-[0.72] border-0 bg-white"
               tabIndex={-1}
             />
+          </div>
+        ) : shouldPreview ? (
+          <div className="flex h-32 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950/20 text-sm text-zinc-500">
+            {previewChecked ? "Open document" : "Loading preview..."}
           </div>
         ) : (
           <div className="flex h-32 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950/20 text-zinc-400">

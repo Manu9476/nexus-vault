@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { createSupabaseBrowser } from "@/lib/supabase";
+import { FileGrid } from "@/components/FileGrid";
+import { FileViewer } from "@/components/FileViewer";
+import type { FileCardModel } from "@/components/FileCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function formatBytes(bytes: number) {
@@ -15,17 +17,6 @@ function formatBytes(bytes: number) {
   const val = bytes / Math.pow(1024, idx);
   return `${val.toFixed(val >= 10 || idx === 0 ? 0 : 1)} ${units[idx]}`;
 }
-
-type RecentFile = {
-  id: string;
-  name: string;
-  file_type: string;
-  created_at: string;
-  size_bytes: number;
-  folder_id: string | null;
-  tags: string[] | null;
-  description: string | null;
-};
 
 type StorageUsageRow = {
   size_bytes: number | string | null;
@@ -41,7 +32,9 @@ export default function DashboardPage() {
     documents: 0,
     storageUsedBytes: 0,
   });
-  const [recent, setRecent] = useState<RecentFile[]>([]);
+  const [recent, setRecent] = useState<FileCardModel[]>([]);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerFileId, setViewerFileId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -49,7 +42,6 @@ export default function DashboardPage() {
       try {
         setLoading(true);
         if (!supabase) {
-          // Build/prerender can happen without env vars. In that case we just render skeletons.
           if (!mounted) return;
           setStats({
             totalFiles: 0,
@@ -61,33 +53,24 @@ export default function DashboardPage() {
           return;
         }
 
-        const [
-          totalFilesRes,
-          photosRes,
-          docsRes,
-          storageBytesRes,
-          recentRes,
-        ] = await Promise.all([
-          supabase
-            .from("files")
-            .select("id", { count: "exact", head: true }),
-          supabase
-            .from("files")
-            .select("id", { count: "exact", head: true })
-            .eq("file_type", "image"),
-          supabase
-            .from("files")
-            .select("id", { count: "exact", head: true })
-            .eq("file_type", "document"),
-          supabase
-            .from("files")
-            .select("size_bytes"),
-          supabase
-            .from("files")
-            .select("id,name,file_type,created_at,size_bytes,folder_id,tags,description")
-            .order("created_at", { ascending: false })
-            .limit(10),
-        ]);
+        const [totalFilesRes, photosRes, docsRes, storageBytesRes, recentRes] =
+          await Promise.all([
+            supabase.from("files").select("id", { count: "exact", head: true }),
+            supabase
+              .from("files")
+              .select("id", { count: "exact", head: true })
+              .eq("file_type", "image"),
+            supabase
+              .from("files")
+              .select("id", { count: "exact", head: true })
+              .eq("file_type", "document"),
+            supabase.from("files").select("size_bytes"),
+            supabase
+              .from("files")
+              .select("id,name,file_type,mime_type,created_at,size_bytes,folder_id,tags,description")
+              .order("created_at", { ascending: false })
+              .limit(10),
+          ]);
 
         const storageRows = (storageBytesRes.data ?? []) as StorageUsageRow[];
         const totalBytes = storageRows.reduce(
@@ -95,18 +78,15 @@ export default function DashboardPage() {
           0
         );
 
-        const nextStats = {
+        if (!mounted) return;
+        setStats({
           totalFiles: totalFilesRes.count ?? 0,
           photos: photosRes.count ?? 0,
           documents: docsRes.count ?? 0,
           storageUsedBytes: totalBytes,
-        };
-
-        if (!mounted) return;
-        setStats(nextStats);
-        setRecent((recentRes.data ?? []) as RecentFile[]);
-      } catch (e) {
-        // We'll render skeleton/empty state if backend isn't configured yet.
+        });
+        setRecent((recentRes.data ?? []) as FileCardModel[]);
+      } catch {
         if (!mounted) return;
         setStats({
           totalFiles: 0,
@@ -116,8 +96,7 @@ export default function DashboardPage() {
         });
         setRecent([]);
       } finally {
-        if (!mounted) return;
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     })();
 
@@ -147,56 +126,52 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-zinc-400">
-              Total files
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {loading ? <Skeleton className="h-7 w-16" /> : <div className="text-2xl font-display">{stats.totalFiles}</div>}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-zinc-400">
-              Photos
-            </CardTitle>
+            <CardTitle className="text-sm font-normal text-zinc-400">Total files</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {loading ? (
               <Skeleton className="h-7 w-16" />
             ) : (
-              <div className="text-2xl font-display">{stats.photos}</div>
+              <div className="font-display text-2xl">{stats.totalFiles}</div>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-zinc-400">
-              Documents
-            </CardTitle>
+            <CardTitle className="text-sm font-normal text-zinc-400">Photos</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {loading ? (
               <Skeleton className="h-7 w-16" />
             ) : (
-              <div className="text-2xl font-display">{stats.documents}</div>
+              <div className="font-display text-2xl">{stats.photos}</div>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-zinc-400">
-              Storage used
-            </CardTitle>
+            <CardTitle className="text-sm font-normal text-zinc-400">Documents</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {loading ? (
+              <Skeleton className="h-7 w-16" />
+            ) : (
+              <div className="font-display text-2xl">{stats.documents}</div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-normal text-zinc-400">Storage used</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {loading ? (
               <Skeleton className="h-7 w-24" />
             ) : (
-              <div className="text-2xl font-display">{formatBytes(stats.storageUsedBytes)}</div>
+              <div className="font-display text-2xl">{formatBytes(stats.storageUsedBytes)}</div>
             )}
           </CardContent>
         </Card>
@@ -205,44 +180,44 @@ export default function DashboardPage() {
       <section>
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-xl tracking-wide">Recently added</h2>
-          <Link href="/files" className="text-sm text-zinc-400 hover:text-zinc-50">
-            View all
+          <Link href="/gallery" className="text-sm text-zinc-400 hover:text-zinc-50">
+            View gallery
           </Link>
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4">
           {loading ? (
-            Array.from({ length: 6 }).map((_, idx) => (
-              <Card key={idx} className="p-4">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="mt-3 h-4 w-24" />
-                <Skeleton className="mt-3 h-10 w-full" />
-              </Card>
-            ))
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <Card key={idx} className="p-4">
+                  <Skeleton className="h-32 w-full" />
+                  <Skeleton className="mt-3 h-4 w-32" />
+                  <Skeleton className="mt-3 h-4 w-24" />
+                </Card>
+              ))}
+            </div>
           ) : recent.length === 0 ? (
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-6 text-zinc-400">
               No files yet. Upload your first photo or document to start building your vault.
             </div>
           ) : (
-            recent.map((f) => (
-              <Card key={f.id} className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{f.name}</div>
-                    <div className="mt-1 text-xs text-zinc-400">
-                      {new Date(f.created_at).toLocaleDateString()} · {formatBytes(Number(f.size_bytes ?? 0))}
-                    </div>
-                  </div>
-                  <div className="shrink-0 rounded-full bg-zinc-900 px-2 py-1 text-[10px] text-zinc-200">
-                    {f.file_type}
-                  </div>
-                </div>
-              </Card>
-            ))
+            <FileGrid
+              files={recent}
+              view="grid"
+              onOpen={(id) => {
+                setViewerFileId(id);
+                setViewerOpen(true);
+              }}
+            />
           )}
         </div>
       </section>
+
+      <FileViewer
+        fileId={viewerFileId}
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+      />
     </div>
   );
 }
-

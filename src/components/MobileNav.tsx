@@ -11,11 +11,13 @@ import {
   Folder,
   Search,
   Settings,
+  Images,
 } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/organizer", label: "Organizer", icon: Archive },
+  { href: "/gallery", label: "Gallery", icon: Images },
   { href: "/files", label: "Files", icon: LayoutGrid },
   { href: "/photos", label: "Photos", icon: ImageIcon },
   { href: "/folders", label: "Folders", icon: Folder },
