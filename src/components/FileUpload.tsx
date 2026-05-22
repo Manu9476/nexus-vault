@@ -314,7 +314,7 @@ export function FileUpload({
             <div className="space-y-2">
               <div className="text-xs text-zinc-400">Workload</div>
               <select
-                className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
                 value={meta.structured.mode}
                 onChange={(e) =>
                   updateStructured("mode", e.target.value as UploadMode)
@@ -332,7 +332,7 @@ export function FileUpload({
             <div className="space-y-2">
               <div className="text-xs text-zinc-400">Folder</div>
               <select
-                className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
                 value={meta.folderId ?? ""}
                 onChange={(e) => setMeta((m) => ({ ...m, folderId: e.target.value || null }))}
                 disabled={isUploading || loadingFolders || Boolean(defaultFolderId)}
@@ -352,7 +352,7 @@ export function FileUpload({
               <div className="space-y-2 md:col-span-2">
                 <div className="text-xs text-zinc-400">Record type</div>
                 <select
-                  className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                  className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
                   value={meta.structured.personalRecordType}
                   onChange={(e) =>
                     updateStructured("personalRecordType", e.target.value as PersonalRecordType)
@@ -373,7 +373,7 @@ export function FileUpload({
                 <div className="space-y-2">
                   <div className="text-xs text-zinc-400">Year</div>
                   <select
-                    className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                    className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
                     value={meta.structured.academicYear}
                     onChange={(e) => updateStructured("academicYear", e.target.value)}
                     disabled={isUploading}
@@ -389,7 +389,7 @@ export function FileUpload({
                 <div className="space-y-2">
                   <div className="text-xs text-zinc-400">Semester</div>
                   <select
-                    className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                    className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
                     value={meta.structured.semester}
                     onChange={(e) => updateStructured("semester", e.target.value)}
                     disabled={isUploading}

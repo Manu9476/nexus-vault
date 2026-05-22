@@ -89,7 +89,7 @@ export default function FilesPage() {
 					</div>
 
 					<select
-						className="h-10 rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+						className="h-10 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
 						value={category}
 						onChange={(e) => setCategory(e.target.value as any)}
 					>

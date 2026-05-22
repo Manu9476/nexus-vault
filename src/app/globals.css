@@ -105,4 +105,18 @@ body {
   html {
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   }
+  select {
+    color-scheme: dark;
+    background-color: rgb(9 9 11);
+    color: rgb(250 250 250);
+  }
+  option {
+    background-color: rgb(9 9 11);
+    color: rgb(250 250 250);
+  }
+  option:checked,
+  option:hover {
+    background-color: rgb(39 39 42);
+    color: rgb(250 250 250);
+  }
 }
