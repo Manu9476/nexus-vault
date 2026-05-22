@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -27,7 +26,9 @@ export function FileCard({
 }) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
-  const shouldPreview = file.file_type === "image" || file.mime_type === "application/pdf";
+  const isPdf = file.mime_type === "application/pdf";
+  const shouldPreview = file.file_type === "image" || isPdf;
+  const pdfPreviewUrl = signedUrl ? `${signedUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1` : null;
 
   useEffect(() => {
     let mounted = true;
@@ -69,6 +70,15 @@ export function FileCard({
             alt={file.name}
             className="h-32 w-full rounded-lg border border-zinc-800 object-cover"
           />
+        ) : isPdf && pdfPreviewUrl ? (
+          <div className="h-32 overflow-hidden rounded-lg border border-zinc-800 bg-white">
+            <iframe
+              src={pdfPreviewUrl}
+              title={`${file.name} preview`}
+              className="pointer-events-none h-[210px] w-full origin-top scale-[0.72] border-0 bg-white"
+              tabIndex={-1}
+            />
+          </div>
         ) : (
           <div className="flex h-32 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950/20 text-zinc-400">
             {file.file_type === "document" ? "PDF/DOC" : "FILE"}
