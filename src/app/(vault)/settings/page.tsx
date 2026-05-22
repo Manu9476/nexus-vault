@@ -6,10 +6,11 @@ import { toast } from "sonner";
 
 import { createSupabaseBrowser } from "@/lib/supabase";
 import {
+  defaultVaultTaxonomy,
   recommendedVaultFolderPaths,
   recommendedVaultFolders,
-  uploadModes,
   type UploadMode,
+  type VaultTaxonomy,
 } from "@/lib/vaultTaxonomy";
 import {
   defaultVaultPreferences,
@@ -19,6 +20,8 @@ import {
   type FileViewPreference,
   type VaultPreferences,
 } from "@/lib/vaultSettings";
+import { getVaultTaxonomy } from "@/lib/vaultTaxonomySettings";
+import { TaxonomyManager } from "@/components/TaxonomyManager";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,10 +40,34 @@ export default function SettingsPage() {
   const [checkingAccount, setCheckingAccount] = useState(true);
   const [creatingFolders, setCreatingFolders] = useState(false);
   const [lastFolderSetup, setLastFolderSetup] = useState<string | null>(null);
+  const [taxonomy, setTaxonomy] = useState<VaultTaxonomy>(defaultVaultTaxonomy);
 
   useEffect(() => {
     setPreferences(getVaultPreferences());
   }, []);
+
+  useEffect(() => {
+    function refreshTaxonomy() {
+      setTaxonomy(getVaultTaxonomy());
+    }
+
+    refreshTaxonomy();
+    window.addEventListener("storage", refreshTaxonomy);
+    window.addEventListener("nexus:taxonomy-updated", refreshTaxonomy);
+
+    return () => {
+      window.removeEventListener("storage", refreshTaxonomy);
+      window.removeEventListener("nexus:taxonomy-updated", refreshTaxonomy);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (taxonomy.workloads.some((mode) => mode.value === preferences.defaultUploadMode)) return;
+    setPreferences((current) => ({
+      ...current,
+      defaultUploadMode: taxonomy.workloads[0]?.value ?? "general",
+    }));
+  }, [preferences.defaultUploadMode, taxonomy.workloads]);
 
   useEffect(() => {
     let mounted = true;
@@ -80,7 +107,16 @@ export default function SettingsPage() {
   }
 
   function savePreferences() {
-    saveVaultPreferences(preferences);
+    const nextPreferences = taxonomy.workloads.some(
+      (mode) => mode.value === preferences.defaultUploadMode
+    )
+      ? preferences
+      : {
+          ...preferences,
+          defaultUploadMode: taxonomy.workloads[0]?.value ?? "general",
+        };
+    setPreferences(nextPreferences);
+    saveVaultPreferences(nextPreferences);
     toast.success("Settings saved.");
   }
 
@@ -218,7 +254,7 @@ export default function SettingsPage() {
                     updatePreference("defaultUploadMode", event.target.value as UploadMode)
                   }
                 >
-                  {uploadModes.map((mode) => (
+                  {taxonomy.workloads.map((mode) => (
                     <option key={mode.value} value={mode.value}>
                       {mode.label}
                     </option>
@@ -276,6 +312,8 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <TaxonomyManager />
 
       <Card className="border-nexus-border bg-nexus-surface">
         <CardHeader>

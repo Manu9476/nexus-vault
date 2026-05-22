@@ -22,15 +22,17 @@ import {
   buildStructuredTags,
   buildStructuredTitle,
   customDocumentName,
-  personalRecordTypes,
+  defaultVaultTaxonomy,
+  getWorkload,
   requiresCustomDocumentName,
-  uploadModes,
   usesPersonalRecordType,
   type PersonalRecordType,
   type StructuredUploadMeta,
   type UploadMode,
+  type VaultTaxonomy,
 } from "@/lib/vaultTaxonomy";
-import { getVaultPreferences } from "@/lib/vaultSettings";
+import { defaultVaultPreferences, getVaultPreferences } from "@/lib/vaultSettings";
+import { getVaultTaxonomy } from "@/lib/vaultTaxonomySettings";
 import type { VaultFolder } from "@/types";
 
 import { Button } from "@/components/ui/button";
@@ -55,7 +57,14 @@ export function FileUpload({
 }) {
   const supabase = useMemo(() => createSupabaseBrowser(), []);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const preferences = useMemo(() => getVaultPreferences(), []);
+  const preferences = defaultVaultPreferences;
+  const [taxonomy, setTaxonomy] = useState<VaultTaxonomy>(defaultVaultTaxonomy);
+  const [hasAppliedClientDefaults, setHasAppliedClientDefaults] = useState(false);
+  const defaultUploadMode =
+    taxonomy.workloads.some((mode) => mode.value === preferences.defaultUploadMode)
+      ? preferences.defaultUploadMode
+      : taxonomy.workloads[0]?.value ?? "general";
+  const defaultRecordType = taxonomy.recordTypes[0]?.value ?? "record";
 
   const [folders, setFolders] = useState<VaultFolder[]>([]);
   const [loadingFolders, setLoadingFolders] = useState(true);
@@ -67,8 +76,8 @@ export function FileUpload({
     folderId: defaultFolderId,
     autoOrganize: defaultFolderId ? false : preferences.autoOrganizeUploads,
     structured: {
-      mode: preferences.defaultUploadMode,
-      personalRecordType: "birth-certificate",
+      mode: defaultUploadMode,
+      personalRecordType: defaultRecordType,
       customDocumentName: "",
       academicYear: "1",
       semester: "1",
@@ -78,6 +87,46 @@ export function FileUpload({
       documentDate: "",
     },
   });
+
+  useEffect(() => {
+    function refreshTaxonomy() {
+      setTaxonomy(getVaultTaxonomy());
+    }
+
+    refreshTaxonomy();
+    window.addEventListener("storage", refreshTaxonomy);
+    window.addEventListener("nexus:taxonomy-updated", refreshTaxonomy);
+
+    return () => {
+      window.removeEventListener("storage", refreshTaxonomy);
+      window.removeEventListener("nexus:taxonomy-updated", refreshTaxonomy);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (hasAppliedClientDefaults) return;
+
+    const clientTaxonomy = getVaultTaxonomy();
+    const clientPreferences = getVaultPreferences();
+    const nextMode = clientTaxonomy.workloads.some(
+      (mode) => mode.value === clientPreferences.defaultUploadMode
+    )
+      ? clientPreferences.defaultUploadMode
+      : clientTaxonomy.workloads[0]?.value ?? "general";
+    const nextRecordType = clientTaxonomy.recordTypes[0]?.value ?? "record";
+
+    setTaxonomy(clientTaxonomy);
+    setMeta((current) => ({
+      ...current,
+      autoOrganize: defaultFolderId ? false : clientPreferences.autoOrganizeUploads,
+      structured: {
+        ...current.structured,
+        mode: nextMode,
+        personalRecordType: nextRecordType,
+      },
+    }));
+    setHasAppliedClientDefaults(true);
+  }, [defaultFolderId, hasAppliedClientDefaults]);
 
   useEffect(() => {
     setMeta((current) => ({
@@ -121,26 +170,38 @@ export function FileUpload({
 
   useEffect(() => {
     setMeta((current) => {
-      const mode = current.structured.mode;
-      const currentType = current.structured.personalRecordType;
+      const nextMode = taxonomy.workloads.some((mode) => mode.value === current.structured.mode)
+        ? current.structured.mode
+        : taxonomy.workloads[0]?.value ?? "general";
+      const workload = getWorkload(nextMode, taxonomy);
+      const recordTypeOptions = taxonomy.recordTypes.filter((type) => {
+        if (!workload?.usesRecordType) return false;
+        if (!workload.recordTypeGroups?.length) return true;
+        return workload.recordTypeGroups.includes(type.group);
+      });
+      const nextRecordType = recordTypeOptions.some(
+        (type) => type.value === current.structured.personalRecordType
+      )
+        ? current.structured.personalRecordType
+        : recordTypeOptions[0]?.value ?? taxonomy.recordTypes[0]?.value ?? "record";
+
       if (
-        mode === "identity-documents" &&
-        !["birth-certificate", "national-id", "driving-license"].includes(currentType)
+        nextMode === current.structured.mode &&
+        nextRecordType === current.structured.personalRecordType
       ) {
-        return {
-          ...current,
-          structured: { ...current.structured, personalRecordType: "birth-certificate" },
-        };
+        return current;
       }
-      if (mode === "certificates" && !["kcse-certificate", "certificate"].includes(currentType)) {
-        return {
-          ...current,
-          structured: { ...current.structured, personalRecordType: "kcse-certificate" },
-        };
-      }
-      return current;
+
+      return {
+        ...current,
+        structured: {
+          ...current.structured,
+          mode: nextMode,
+          personalRecordType: nextRecordType,
+        },
+      };
     });
-  }, [meta.structured.mode]);
+  }, [meta.structured.mode, taxonomy]);
 
   function updateStructured<K extends keyof StructuredUploadMeta>(
     key: K,
@@ -234,7 +295,7 @@ export function FileUpload({
     const fileArr = Array.from(files);
     if (fileArr.length === 0) return;
 
-    if (requiresCustomDocumentName(meta.structured) && !customDocumentName(meta.structured)) {
+    if (requiresCustomDocumentName(meta.structured, taxonomy) && !customDocumentName(meta.structured)) {
       toast.error("Write what this other document is before uploading.");
       return;
     }
@@ -246,8 +307,8 @@ export function FileUpload({
     }
 
     const user = authRes.user;
-    const tags = buildStructuredTags(meta.structured, parseTagsInput(meta.tagsInput));
-    const generatedDescription = buildStructuredDescription(meta.structured);
+    const tags = buildStructuredTags(meta.structured, parseTagsInput(meta.tagsInput), taxonomy);
+    const generatedDescription = buildStructuredDescription(meta.structured, taxonomy);
     const folderCache = new Map<string, string | null>();
 
     setIsUploading(true);
@@ -270,7 +331,7 @@ export function FileUpload({
           mimeType: file.type,
         });
         let targetFolderId = meta.folderId;
-        const autoFolderPath = buildStructuredFolderPath(meta.structured, fileType);
+        const autoFolderPath = buildStructuredFolderPath(meta.structured, fileType, taxonomy);
 
         if (!targetFolderId && meta.autoOrganize && autoFolderPath?.length) {
           const cacheKey = autoFolderPath.join("/");
@@ -297,13 +358,14 @@ export function FileUpload({
                 fallback: originalFilename,
                 index,
                 total: fileArr.length,
+                taxonomy,
               });
 
         const description = [generatedDescription, meta.description.trim()]
           .filter(Boolean)
           .join("\n");
-        const category = buildStructuredCategory(meta.structured, fileType);
-        const documentType = buildStructuredDocumentType(meta.structured, fileType);
+        const category = buildStructuredCategory(meta.structured, fileType, taxonomy);
+        const documentType = buildStructuredDocumentType(meta.structured, fileType, taxonomy);
         const customTypeLabel = customDocumentName(meta.structured) || null;
         const isAcademic = meta.structured.mode.startsWith("academic");
         const searchText = buildSearchText({
@@ -379,17 +441,17 @@ export function FileUpload({
     e.stopPropagation();
   }
 
-  const needsCustomDocumentName = requiresCustomDocumentName(meta.structured);
-  const usesRecordType = usesPersonalRecordType(meta.structured.mode);
-  const suggestedFolderPath = buildStructuredFolderPath(meta.structured)?.join(" / ");
-  const recordTypeOptions = personalRecordTypes.filter((type) => {
-    if (meta.structured.mode === "identity-documents") {
-      return ["birth-certificate", "national-id", "driving-license"].includes(type.value);
-    }
-    if (meta.structured.mode === "certificates") {
-      return ["kcse-certificate", "certificate"].includes(type.value);
-    }
-    return true;
+  const selectedWorkload = getWorkload(meta.structured.mode, taxonomy);
+  const needsCustomDocumentName = requiresCustomDocumentName(meta.structured, taxonomy);
+  const usesRecordType = usesPersonalRecordType(meta.structured.mode, taxonomy);
+  const usesAcademicFields = Boolean(
+    selectedWorkload?.usesAcademicFields || meta.structured.mode.startsWith("academic")
+  );
+  const suggestedFolderPath = buildStructuredFolderPath(meta.structured, undefined, taxonomy)?.join(" / ");
+  const recordTypeOptions = taxonomy.recordTypes.filter((type) => {
+    if (!usesRecordType) return false;
+    if (!selectedWorkload?.recordTypeGroups?.length) return true;
+    return selectedWorkload.recordTypeGroups.includes(type.group);
   });
 
   return (
@@ -457,7 +519,7 @@ export function FileUpload({
                 }
                 disabled={isUploading}
               >
-                {uploadModes.map((mode) => (
+                {taxonomy.workloads.map((mode) => (
                   <option key={mode.value} value={mode.value}>
                     {mode.label}
                   </option>
@@ -520,7 +582,7 @@ export function FileUpload({
               </div>
             ) : null}
 
-            {meta.structured.mode.startsWith("academic") ? (
+            {usesAcademicFields ? (
               <>
                 <div className="space-y-2">
                   <div className="text-xs text-nexus-muted">Year</div>
