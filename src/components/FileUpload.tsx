@@ -11,6 +11,19 @@ import {
   parseTagsInput,
   sanitizeFilename,
 } from "@/lib/fileHelpers";
+import {
+  academicSemesters,
+  academicYears,
+  buildStructuredDescription,
+  buildStructuredFolderName,
+  buildStructuredTags,
+  buildStructuredTitle,
+  personalRecordTypes,
+  uploadModes,
+  type PersonalRecordType,
+  type StructuredUploadMeta,
+  type UploadMode,
+} from "@/lib/vaultTaxonomy";
 import type { VaultFolder } from "@/types";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +35,8 @@ export type UploadMeta = {
   description: string;
   tagsInput: string;
   folderId: string | null;
+  autoOrganize: boolean;
+  structured: StructuredUploadMeta;
 };
 
 export function FileUpload({
@@ -42,12 +57,22 @@ export function FileUpload({
     description: "",
     tagsInput: "",
     folderId: defaultFolderId,
+    autoOrganize: !defaultFolderId,
+    structured: {
+      mode: "general",
+      personalRecordType: "birth-certificate",
+      academicYear: "1",
+      semester: "1",
+      courseCode: "",
+      courseTitle: "",
+    },
   });
 
   useEffect(() => {
     setMeta((current) => ({
       ...current,
       folderId: defaultFolderId,
+      autoOrganize: defaultFolderId ? false : current.autoOrganize,
     }));
   }, [defaultFolderId]);
 
@@ -82,6 +107,45 @@ export function FileUpload({
     };
   }, [supabase]);
 
+  function updateStructured<K extends keyof StructuredUploadMeta>(
+    key: K,
+    value: StructuredUploadMeta[K]
+  ) {
+    setMeta((current) => ({
+      ...current,
+      structured: {
+        ...current.structured,
+        [key]: value,
+      },
+    }));
+  }
+
+  async function getOrCreateFolder(userId: string, folderName: string) {
+    const { data: existing, error: existingErr } = await supabase
+      .from("folders")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("name", folderName)
+      .maybeSingle();
+
+    if (existingErr) throw existingErr;
+    if (existing?.id) return existing.id as string;
+
+    const { data: created, error: createErr } = await supabase
+      .from("folders")
+      .insert({
+        user_id: userId,
+        name: folderName,
+        color: null,
+        icon: null,
+      })
+      .select("id")
+      .single();
+
+    if (createErr) throw createErr;
+    return created.id as string;
+  }
+
   async function uploadFiles(files: FileList | File[]) {
     if (!supabase) {
       toast.error("Supabase is not configured yet.");
@@ -98,11 +162,18 @@ export function FileUpload({
     }
 
     const user = authRes.user;
-    const tags = parseTagsInput(meta.tagsInput);
+    const tags = buildStructuredTags(meta.structured, parseTagsInput(meta.tagsInput));
+    const generatedDescription = buildStructuredDescription(meta.structured);
 
     setIsUploading(true);
     try {
       const uploaded: string[] = [];
+      let targetFolderId = meta.folderId;
+      const autoFolderName = buildStructuredFolderName(meta.structured);
+
+      if (!targetFolderId && meta.autoOrganize && autoFolderName) {
+        targetFolderId = await getOrCreateFolder(user.id, autoFolderName);
+      }
 
       for (let index = 0; index < fileArr.length; index++) {
         const file = fileArr[index];
@@ -132,7 +203,16 @@ export function FileUpload({
         const title =
           meta.titlePrefix.trim().length > 0
             ? `${meta.titlePrefix.trim()}${fileArr.length > 1 ? ` (${index + 1})` : ""}`
-            : originalFilename;
+            : buildStructuredTitle({
+                meta: meta.structured,
+                fallback: originalFilename,
+                index,
+                total: fileArr.length,
+              });
+
+        const description = [generatedDescription, meta.description.trim()]
+          .filter(Boolean)
+          .join("\n");
 
         const { error: insertErr } = await supabase.from("files").insert({
           id: fileId,
@@ -144,8 +224,8 @@ export function FileUpload({
           file_type: fileType,
           mime_type: file.type || null,
           size_bytes: file.size,
-          folder_id: meta.folderId,
-          description: meta.description.trim() ? meta.description.trim() : null,
+          folder_id: targetFolderId,
+          description: description || null,
           tags: tags.length ? tags : [],
         });
 
@@ -194,9 +274,9 @@ export function FileUpload({
         >
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="font-display text-lg tracking-wide">Upload to your vault</div>
+              <div className="font-display text-lg tracking-wide">Smart upload</div>
               <div className="mt-1 text-sm text-zinc-400">
-                Drag & drop photos, documents, or any file type.
+                Add records, results, notes, and supporting files.
               </div>
             </div>
 
@@ -232,6 +312,134 @@ export function FileUpload({
 
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <div className="space-y-2">
+              <div className="text-xs text-zinc-400">Workload</div>
+              <select
+                className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                value={meta.structured.mode}
+                onChange={(e) =>
+                  updateStructured("mode", e.target.value as UploadMode)
+                }
+                disabled={isUploading}
+              >
+                {uploadModes.map((mode) => (
+                  <option key={mode.value} value={mode.value}>
+                    {mode.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs text-zinc-400">Folder</div>
+              <select
+                className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                value={meta.folderId ?? ""}
+                onChange={(e) => setMeta((m) => ({ ...m, folderId: e.target.value || null }))}
+                disabled={isUploading || loadingFolders || Boolean(defaultFolderId)}
+              >
+                <option value="">
+                  {meta.autoOrganize ? "Auto folder" : "Unsorted"}
+                </option>
+                {folders.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {meta.structured.mode === "personal-record" ? (
+              <div className="space-y-2 md:col-span-2">
+                <div className="text-xs text-zinc-400">Record type</div>
+                <select
+                  className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                  value={meta.structured.personalRecordType}
+                  onChange={(e) =>
+                    updateStructured("personalRecordType", e.target.value as PersonalRecordType)
+                  }
+                  disabled={isUploading}
+                >
+                  {personalRecordTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+
+            {meta.structured.mode.startsWith("academic") ? (
+              <>
+                <div className="space-y-2">
+                  <div className="text-xs text-zinc-400">Year</div>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                    value={meta.structured.academicYear}
+                    onChange={(e) => updateStructured("academicYear", e.target.value)}
+                    disabled={isUploading}
+                  >
+                    {academicYears.map((year) => (
+                      <option key={year} value={year}>
+                        Year {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-xs text-zinc-400">Semester</div>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
+                    value={meta.structured.semester}
+                    onChange={(e) => updateStructured("semester", e.target.value)}
+                    disabled={isUploading}
+                  >
+                    {academicSemesters.map((semester) => (
+                      <option key={semester} value={semester}>
+                        Semester {semester}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-xs text-zinc-400">Course code</div>
+                  <Input
+                    value={meta.structured.courseCode}
+                    onChange={(e) => updateStructured("courseCode", e.target.value)}
+                    placeholder="e.g. CSC101"
+                    disabled={isUploading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-xs text-zinc-400">Course title</div>
+                  <Input
+                    value={meta.structured.courseTitle}
+                    onChange={(e) => updateStructured("courseTitle", e.target.value)}
+                    placeholder="e.g. Calculus I"
+                    disabled={isUploading}
+                  />
+                </div>
+              </>
+            ) : null}
+
+            {!defaultFolderId ? (
+              <label className="flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-2 text-sm text-zinc-300 md:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={meta.autoOrganize}
+                  onChange={(e) =>
+                    setMeta((m) => ({ ...m, autoOrganize: e.target.checked }))
+                  }
+                  disabled={isUploading}
+                  className="h-4 w-4 accent-amber-400"
+                />
+                Auto-create the matching folder when no folder is selected
+              </label>
+            ) : null}
+
+            <div className="space-y-2">
               <div className="text-xs text-zinc-400">Title (optional)</div>
               <Input
                 value={meta.titlePrefix}
@@ -239,23 +447,6 @@ export function FileUpload({
                 placeholder="e.g. Tax 2024"
                 disabled={isUploading}
               />
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-xs text-zinc-400">Folder (optional)</div>
-              <select
-                className="flex h-10 w-full rounded-md border border-zinc-800 bg-transparent px-3 text-sm text-zinc-50"
-                value={meta.folderId ?? ""}
-                onChange={(e) => setMeta((m) => ({ ...m, folderId: e.target.value || null }))}
-                disabled={isUploading || loadingFolders}
-              >
-                <option value="">Unsorted</option>
-                {folders.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
             </div>
 
             <div className="space-y-2 md:col-span-2">
@@ -280,8 +471,7 @@ export function FileUpload({
           </div>
 
           <p className="mt-3 text-xs text-zinc-500">
-            Tip: For HEIC images, most browsers can download/preview via lightbox only after conversion;
-            Nexus will store the file regardless.
+            HEIC images are stored safely, but browser preview may need conversion.
           </p>
         </div>
       </CardContent>

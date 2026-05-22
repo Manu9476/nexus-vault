@@ -7,7 +7,7 @@ import {
   LayoutGrid,
   Home,
   Image as ImageIcon,
-  FileText,
+  Archive,
   Folder,
   Search,
   Settings,
@@ -15,6 +15,7 @@ import {
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
+  { href: "/organizer", label: "Organizer", icon: Archive },
   { href: "/files", label: "Files", icon: LayoutGrid },
   { href: "/photos", label: "Photos", icon: ImageIcon },
   { href: "/folders", label: "Folders", icon: Folder },

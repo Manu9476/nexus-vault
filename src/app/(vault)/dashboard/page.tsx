@@ -136,7 +136,7 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/files"
+            href="/organizer"
             className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-800 px-4 text-sm font-medium text-zinc-50 transition-colors hover:bg-zinc-700"
           >
             Quick Upload

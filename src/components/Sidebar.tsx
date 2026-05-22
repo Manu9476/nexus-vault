@@ -10,6 +10,7 @@ import {
   Search,
   Settings,
   Home,
+  Archive,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
+  { href: "/organizer", label: "Organizer", icon: Archive },
   { href: "/files", label: "All Files", icon: LayoutGrid },
   { href: "/photos", label: "Photos", icon: ImageIcon },
   { href: "/documents", label: "Documents", icon: FileText },

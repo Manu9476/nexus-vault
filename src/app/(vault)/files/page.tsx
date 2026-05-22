@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { createSupabaseBrowser } from "@/lib/supabase";
+import { matchesVaultSearch } from "@/lib/vaultTaxonomy";
 import type { VaultFileType } from "@/types";
 import { FileUpload } from "@/components/FileUpload";
 import { FileGrid } from "@/components/FileGrid";
@@ -49,15 +50,13 @@ export default function FilesPage() {
 				q = q.eq("file_type", category);
 			}
 
-			if (query.trim()) {
-				const s = query.trim();
-				q = q.or(`name.ilike.%${s}%,description.ilike.%${s}%`);
-			}
-
-			const { data, error } = await q.order("created_at", { ascending: false }).limit(50);
+			const { data, error } = await q.order("created_at", { ascending: false }).limit(500);
 
 			if (error) throw error;
-			setFiles((data ?? []) as any);
+			const nextFiles = ((data ?? []) as FileCardModel[]).filter((file) =>
+				matchesVaultSearch(file, query)
+			);
+			setFiles(nextFiles);
 		} catch {
 			setFiles([]);
 		} finally {
