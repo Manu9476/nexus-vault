@@ -18,6 +18,17 @@ export const uploadModes = [
 export const academicYears = ["1", "2", "3", "4", "5"] as const;
 export const academicSemesters = ["1", "2", "3"] as const;
 
+export const recommendedVaultFolders = Array.from(
+  new Set([
+    ...personalRecordTypes.map((record) => record.folder),
+    ...academicYears.map((year) => `Academic Results - Year ${year}`),
+    ...academicYears.map((year) => `Academic Files - Year ${year}`),
+    ...academicYears.flatMap((year) =>
+      academicSemesters.map((semester) => `Course Notes - Year ${year} - Semester ${semester}`)
+    ),
+  ])
+);
+
 export type UploadMode = (typeof uploadModes)[number]["value"];
 export type PersonalRecordType = (typeof personalRecordTypes)[number]["value"];
 

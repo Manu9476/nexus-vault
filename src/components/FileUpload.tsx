@@ -24,6 +24,7 @@ import {
   type StructuredUploadMeta,
   type UploadMode,
 } from "@/lib/vaultTaxonomy";
+import { getVaultPreferences } from "@/lib/vaultSettings";
 import type { VaultFolder } from "@/types";
 
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ export function FileUpload({
 }) {
   const supabase = useMemo(() => createSupabaseBrowser(), []);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const preferences = useMemo(() => getVaultPreferences(), []);
 
   const [folders, setFolders] = useState<VaultFolder[]>([]);
   const [loadingFolders, setLoadingFolders] = useState(true);
@@ -57,9 +59,9 @@ export function FileUpload({
     description: "",
     tagsInput: "",
     folderId: defaultFolderId,
-    autoOrganize: !defaultFolderId,
+    autoOrganize: defaultFolderId ? false : preferences.autoOrganizeUploads,
     structured: {
-      mode: "general",
+      mode: preferences.defaultUploadMode,
       personalRecordType: "birth-certificate",
       academicYear: "1",
       semester: "1",

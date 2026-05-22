@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { createSupabaseBrowser } from "@/lib/supabase";
 import { matchesVaultSearch } from "@/lib/vaultTaxonomy";
+import { getVaultPreferences, saveVaultPreferences } from "@/lib/vaultSettings";
 import type { VaultFileType } from "@/types";
 import { FileUpload } from "@/components/FileUpload";
 import { FileGrid } from "@/components/FileGrid";
@@ -17,10 +18,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FilesPage() {
 	const supabase = useMemo(() => createSupabaseBrowser(), []);
+	const preferences = useMemo(() => getVaultPreferences(), []);
 
 	const [files, setFiles] = useState<FileCardModel[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [view, setView] = useState<"grid" | "list">("grid");
+	const [view, setView] = useState<"grid" | "list">(preferences.defaultFileView);
 	const [uploadOpen, setUploadOpen] = useState(false);
 
 	const [query, setQuery] = useState("");
@@ -33,6 +35,14 @@ export default function FilesPage() {
 		const params = new URLSearchParams(window.location.search);
 		setQuery(params.get("q") ?? "");
 	}, []);
+
+	function updateView(nextView: "grid" | "list") {
+		setView(nextView);
+		saveVaultPreferences({
+			...getVaultPreferences(),
+			defaultFileView: nextView,
+		});
+	}
 
 	async function fetchFiles() {
 		if (!supabase) {
@@ -113,14 +123,14 @@ export default function FilesPage() {
 						<Button
 							variant={view === "grid" ? "secondary" : "outline"}
 							size="sm"
-							onClick={() => setView("grid")}
+							onClick={() => updateView("grid")}
 						>
 							Grid
 						</Button>
 						<Button
 							variant={view === "list" ? "secondary" : "outline"}
 							size="sm"
-							onClick={() => setView("list")}
+							onClick={() => updateView("list")}
 						>
 							List
 						</Button>
