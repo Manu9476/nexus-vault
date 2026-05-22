@@ -48,16 +48,16 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
-      <Card className="w-full max-w-md border-zinc-800 bg-zinc-950/40">
+      <Card className="w-full max-w-md border-nexus-border bg-nexus-surface">
         <CardHeader>
-          <CardTitle className="font-display text-2xl">Login to Nexus</CardTitle>
-          <p className="mt-1 text-sm text-zinc-400">
+          <CardTitle className="font-display text-2xl font-extrabold">Login to Nexus</CardTitle>
+          <p className="mt-1 text-sm text-nexus-muted">
             Your personal digital vault. Protected by Supabase Auth.
           </p>
         </CardHeader>
         <CardContent>
           {!supabase ? (
-            <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+            <div className="mb-4 rounded-xl border border-nexus-orange/40 bg-nexus-orange/10 p-4 text-sm text-nexus-orange">
               Supabase env vars are missing. Add NEXT_PUBLIC_SUPABASE_URL and
               NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local, then restart npm run dev.
             </div>
@@ -65,7 +65,7 @@ export default function LoginPage() {
 
           <form className="space-y-4" onSubmit={onSubmit}>
             <div className="space-y-2">
-              <label className="text-sm text-zinc-300" htmlFor="email">
+              <label className="text-sm text-nexus-muted" htmlFor="email">
                 Email
               </label>
               <Input
@@ -80,13 +80,13 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-zinc-300" htmlFor="password">
+              <label className="text-sm text-nexus-muted" htmlFor="password">
                 Password
               </label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="********"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
@@ -99,7 +99,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-5 text-xs text-zinc-500">
+          <p className="mt-5 text-xs text-nexus-muted">
             If this is your first setup, you need to configure your Supabase project and
             RLS/storage policies.
           </p>

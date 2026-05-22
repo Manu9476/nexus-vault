@@ -48,15 +48,15 @@ export default function OrganizerPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="font-display text-3xl tracking-wide">Organizer</h1>
-          <p className="mt-1 text-sm text-zinc-400">
+          <h1 className="font-display text-3xl font-extrabold">Organizer</h1>
+          <p className="mt-1 text-sm text-nexus-muted">
             Structured intake for personal records and academic files.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           {quickSearches.map((item) => (
             <Link key={item.href} href={item.href}>
-              <Badge className="transition-colors hover:border-amber-300/70 hover:text-amber-200">
+              <Badge className="transition-colors hover:border-nexus-orange/70 hover:text-nexus-orange">
                 {item.label}
               </Badge>
             </Link>
@@ -69,10 +69,10 @@ export default function OrganizerPage() {
           const Icon = section.icon;
           return (
             <Link key={section.title} href={section.href}>
-              <Card className="h-full transition-colors hover:border-zinc-700 hover:bg-zinc-900/40">
+              <Card className="h-full transition-colors hover:border-nexus-orange">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-900 text-amber-300">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-nexus-surface text-nexus-purple">
                       <Icon className="h-5 w-5" />
                     </div>
                     <CardTitle className="text-base">{section.title}</CardTitle>
@@ -83,7 +83,7 @@ export default function OrganizerPage() {
                     {section.items.map((item) => (
                       <span
                         key={item}
-                        className="rounded border border-zinc-800 bg-zinc-900/30 px-2 py-1 text-[11px] text-zinc-300"
+                        className="rounded border border-nexus-border bg-nexus-surface px-2 py-1 text-[11px] text-nexus-muted"
                       >
                         {item}
                       </span>

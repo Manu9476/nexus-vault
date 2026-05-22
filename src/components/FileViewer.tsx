@@ -136,13 +136,13 @@ export function FileViewer({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[95vw] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-nexus-bg/80" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[95vw] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-nexus-border bg-nexus-surface">
           <div className="flex max-h-[85vh] flex-col">
-            <div className="flex items-center justify-between gap-3 border-b border-zinc-800 p-4">
+            <div className="flex items-center justify-between gap-3 border-b border-nexus-border p-4">
               <div className="min-w-0">
-                <div className="truncate font-display text-lg">{file?.name ?? "File preview"}</div>
-                <div className="mt-1 text-xs text-zinc-400">
+                <div className="truncate font-display text-lg font-bold">{file?.name ?? "File preview"}</div>
+                <div className="mt-1 text-xs text-nexus-muted">
                   {file ? new Date(file.created_at).toLocaleString() : null}
                 </div>
               </div>
@@ -155,7 +155,7 @@ export function FileViewer({
                   Close
                 </Button>
                 {file ? (
-                  <Button variant="outline" className="border-red-400/40 text-red-200 hover:bg-red-400/10" onClick={onDelete}>
+                  <Button variant="outline" className="border-nexus-orange text-nexus-orange hover:bg-nexus-orange hover:text-white" onClick={onDelete}>
                     Delete
                   </Button>
                 ) : null}
@@ -165,7 +165,7 @@ export function FileViewer({
             <div className="grid max-h-[calc(85vh-64px)] grid-cols-1 gap-0 overflow-auto md:grid-cols-[1fr_320px]">
               <div className="p-4">
                 {loading ? (
-                  <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-6 text-zinc-400">
+                  <div className="rounded-xl border border-nexus-border bg-nexus-surface p-6 text-nexus-muted">
                     Loading preview...
                   </div>
                 ) : canPreviewImage ? (
@@ -173,15 +173,15 @@ export function FileViewer({
                   <img
                     src={signedUrl!}
                     alt={file!.name}
-                    className="h-auto w-full rounded-xl border border-zinc-800 object-contain"
+                    className="h-auto w-full rounded-xl border border-nexus-border object-contain"
                   />
                 ) : canPreviewPdf ? (
                   <iframe
                     src={signedUrl!}
-                    className="h-[70vh] w-full rounded-xl border border-zinc-800 bg-white"
+                    className="h-[70vh] w-full rounded-xl border border-nexus-border bg-white"
                   />
                 ) : (
-                  <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-6 text-zinc-300">
+                  <div className="rounded-xl border border-nexus-border bg-nexus-surface p-6 text-nexus-muted">
                     Preview not available for this file type. You can download it instead.
                   </div>
                 )}
@@ -192,7 +192,7 @@ export function FileViewer({
                       href={signedUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center justify-center rounded-md bg-amber-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-amber-300"
+                      className="inline-flex items-center justify-center rounded-full bg-nexus-orange px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-nexus-orange"
                     >
                       Download
                     </a>
@@ -200,13 +200,13 @@ export function FileViewer({
                 ) : null}
               </div>
 
-              <div className="border-t border-zinc-800 p-4 md:border-l md:border-t-0">
+              <div className="border-t border-nexus-border p-4 md:border-l md:border-t-0">
                 <div className="space-y-3">
                   {file ? (
                     isEditing ? (
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs text-zinc-400">Name</label>
+                          <label className="text-xs text-nexus-muted">Name</label>
                           <Input
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
@@ -214,7 +214,7 @@ export function FileViewer({
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-zinc-400">Tags (comma separated)</label>
+                          <label className="text-xs text-nexus-muted">Tags (comma separated)</label>
                           <Input
                             value={editTags}
                             onChange={(e) => setEditTags(e.target.value)}
@@ -223,7 +223,7 @@ export function FileViewer({
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-zinc-400">Description</label>
+                          <label className="text-xs text-nexus-muted">Description</label>
                           <Textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}
@@ -250,23 +250,23 @@ export function FileViewer({
                             Edit Details
                           </Button>
                         </div>
-                        <Card className="border-zinc-800 bg-zinc-950/40 p-3">
-                          <div className="text-xs text-zinc-400">Type</div>
+                        <Card className="border-nexus-border bg-nexus-surface p-3">
+                          <div className="text-xs text-nexus-muted">Type</div>
                           <div className="mt-1">
                             <Badge>{file.file_type}</Badge>
                           </div>
-                          <div className="mt-3 text-xs text-zinc-400">Size</div>
+                          <div className="mt-3 text-xs text-nexus-muted">Size</div>
                           <div className="mt-1 text-sm">{file.size_bytes} bytes</div>
                         </Card>
 
                         {file.tags?.length ? (
-                          <Card className="border-zinc-800 bg-zinc-950/40 p-3">
-                            <div className="text-xs text-zinc-400">Tags</div>
+                          <Card className="border-nexus-border bg-nexus-surface p-3">
+                            <div className="text-xs text-nexus-muted">Tags</div>
                             <div className="mt-2 flex flex-wrap gap-1">
                               {file.tags.map((t) => (
                                 <span
                                   key={t}
-                                  className="rounded border border-zinc-800 bg-zinc-900/30 px-2 py-1 text-[11px] text-zinc-200"
+                                  className="rounded border border-nexus-border bg-nexus-surface px-2 py-1 text-[11px] text-nexus-muted"
                                 >
                                   {t}
                                 </span>
@@ -276,9 +276,9 @@ export function FileViewer({
                         ) : null}
 
                         {file.description ? (
-                          <Card className="border-zinc-800 bg-zinc-950/40 p-3">
-                            <div className="text-xs text-zinc-400">Description</div>
-                            <div className="mt-2 whitespace-pre-wrap text-sm text-zinc-200">
+                          <Card className="border-nexus-border bg-nexus-surface p-3">
+                            <div className="text-xs text-nexus-muted">Description</div>
+                            <div className="mt-2 whitespace-pre-wrap text-sm text-nexus-muted">
                               {file.description}
                             </div>
                           </Card>
@@ -286,7 +286,7 @@ export function FileViewer({
                       </>
                     )
                   ) : (
-                    <div className="text-sm text-zinc-400">Loading metadata...</div>
+                    <div className="text-sm text-nexus-muted">Loading metadata...</div>
                   )}
                 </div>
               </div>

@@ -71,8 +71,8 @@ export default function GalleryPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="font-display text-3xl tracking-wide">Gallery</h1>
-          <p className="mt-1 text-sm text-zinc-400">
+          <h1 className="font-display text-3xl font-extrabold">Gallery</h1>
+          <p className="mt-1 text-sm text-nexus-muted">
             One visual place for every file in your vault.
           </p>
         </div>
@@ -94,17 +94,17 @@ export default function GalleryPage() {
 
       <section>
         <div className="mb-3 flex items-baseline justify-between">
-          <div className="font-display text-xl tracking-wide">Everything</div>
-          <div className="text-sm text-zinc-400">
+          <div className="font-display text-xl font-bold">Everything</div>
+          <div className="text-sm text-nexus-muted">
             {loading ? "Loading..." : `${files.length} item${files.length === 1 ? "" : "s"}`}
           </div>
         </div>
 
         {loading ? (
-          <Card className="border-zinc-800 bg-zinc-950/30 p-4">
+          <Card className="border-nexus-border bg-nexus-surface p-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 12 }).map((_, idx) => (
-                <div key={idx} className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-3">
+                <div key={idx} className="rounded-xl border border-nexus-border bg-nexus-surface p-3">
                   <Skeleton className="h-32 w-full" />
                   <Skeleton className="mt-3 h-4 w-3/4" />
                 </div>
@@ -112,7 +112,7 @@ export default function GalleryPage() {
             </div>
           </Card>
         ) : files.length === 0 ? (
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-8 text-center text-zinc-400">
+          <div className="rounded-xl border border-nexus-border bg-nexus-surface p-8 text-center text-nexus-muted">
             No files in this view yet.
           </div>
         ) : (

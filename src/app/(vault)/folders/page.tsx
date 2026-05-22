@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -83,14 +83,14 @@ export default function FoldersPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="font-display text-3xl tracking-wide">Folders</h1>
-          <p className="mt-1 text-sm text-zinc-400">
+          <h1 className="font-display text-3xl font-extrabold">Folders</h1>
+          <p className="mt-1 text-sm text-nexus-muted">
             Create and manage your collections.
           </p>
         </div>
       </header>
 
-      <Card className="border-zinc-800 bg-zinc-950/30 p-4">
+      <Card className="border-nexus-border bg-nexus-surface p-4">
         <form onSubmit={handleCreateFolder} className="flex gap-2">
           <Input 
             value={newFolderName}
@@ -113,19 +113,19 @@ export default function FoldersPage() {
             ))}
           </div>
         ) : folders.length === 0 ? (
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-8 text-center text-zinc-400">
+          <div className="rounded-xl border border-nexus-border bg-nexus-surface p-8 text-center text-nexus-muted">
             No folders yet. Create one to organize your files.
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {folders.map(folder => (
               <Link key={folder.id} href={`/folders/${folder.id}`}>
-                <Card className="flex h-24 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-950/30 p-4 transition-colors hover:border-zinc-700 hover:bg-zinc-900/50">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800 text-zinc-400">
+                <Card className="flex h-24 items-center gap-4 rounded-xl border border-nexus-border bg-nexus-surface p-4 transition-colors hover:border-nexus-orange">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-nexus-surface text-nexus-purple">
                     <FolderIcon size={20} />
                   </div>
                   <div className="overflow-hidden">
-                    <h3 className="truncate font-medium text-zinc-100">{folder.name}</h3>
+                    <h3 className="truncate font-medium text-nexus-text">{folder.name}</h3>
                   </div>
                 </Card>
               </Link>

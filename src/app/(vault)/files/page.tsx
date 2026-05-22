@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -84,8 +84,8 @@ export default function FilesPage() {
 		<div className="space-y-6">
 			<header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 				<div>
-					<h1 className="font-display text-3xl tracking-wide">All Files</h1>
-					<p className="mt-1 text-sm text-zinc-400">
+					<h1 className="font-display text-3xl font-extrabold">All Files</h1>
+					<p className="mt-1 text-sm text-nexus-muted">
 						Search, upload, and open files from your private vault.
 					</p>
 				</div>
@@ -100,7 +100,7 @@ export default function FilesPage() {
 					</div>
 
 					<select
-						className="h-10 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
+						className="h-10 rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
 						value={category}
 						onChange={(e) => setCategory(e.target.value as any)}
 					>
@@ -142,8 +142,8 @@ export default function FilesPage() {
 				<section className="space-y-3">
 					<div className="flex items-center justify-between">
 						<div>
-							<h2 className="font-display text-xl tracking-wide">Upload panel</h2>
-							<p className="mt-1 text-sm text-zinc-400">
+							<h2 className="font-display text-xl font-bold">Upload panel</h2>
+							<p className="mt-1 text-sm text-nexus-muted">
 								Add files, then return to the file list below.
 							</p>
 						</div>
@@ -167,17 +167,17 @@ export default function FilesPage() {
 
 			<section>
 				<div className="mb-3 flex items-baseline justify-between">
-					<div className="font-display text-xl tracking-wide">Your files</div>
-					<div className="text-sm text-zinc-400">
+					<div className="font-display text-xl font-bold">Your files</div>
+					<div className="text-sm text-nexus-muted">
 						{loading ? "Loading..." : `${files.length} result${files.length === 1 ? "" : "s"}`}
 					</div>
 				</div>
 
 				{loading ? (
-					<Card className="border-zinc-800 bg-zinc-950/30 p-4">
+					<Card className="border-nexus-border bg-nexus-surface p-4">
 						<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 							{Array.from({ length: 9 }).map((_, idx) => (
-								<div key={idx} className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-3">
+								<div key={idx} className="rounded-xl border border-nexus-border bg-nexus-surface p-3">
 									<Skeleton className="h-32 w-full" />
 									<Skeleton className="mt-3 h-4 w-3/4" />
 								</div>
@@ -185,7 +185,7 @@ export default function FilesPage() {
 						</div>
 					</Card>
 				) : files.length === 0 ? (
-					<div className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-8 text-center text-zinc-400">
+					<div className="rounded-xl border border-nexus-border bg-nexus-surface p-8 text-center text-nexus-muted">
 						No files found. Use the Upload button to add something to your vault.
 					</div>
 				) : (

@@ -33,14 +33,14 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-72 flex-col border-r border-zinc-800 bg-zinc-950/50 p-5 md:flex">
+    <aside className="hidden w-72 flex-col border-r border-nexus-border bg-nexus-bg p-5 md:flex">
       <div className="mb-6 flex items-center gap-3 px-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-bold text-lg">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-nexus-orange text-lg font-extrabold text-white">
           N
         </div>
         <div className="leading-tight">
-          <div className="font-display text-xl tracking-wide">Nexus</div>
-          <div className="text-xs text-zinc-400">Private vault</div>
+          <div className="font-display text-xl font-extrabold text-nexus-text">Nexus</div>
+          <div className="text-xs text-nexus-muted">Private vault</div>
         </div>
       </div>
 
@@ -54,13 +54,13 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                "flex items-center gap-3 rounded-r-xl border-l-[3px] px-3 py-2 text-sm font-medium transition-colors",
                 active
-                  ? "bg-zinc-900 text-zinc-50"
-                  : "text-zinc-300 hover:bg-zinc-900/60 hover:text-zinc-50"
+                  ? "border-nexus-orange bg-nexus-surface text-nexus-orange"
+                  : "border-transparent text-nexus-muted hover:bg-nexus-surface hover:text-nexus-text"
               )}
             >
-              <Icon className={cn("h-4 w-4", active ? "text-amber-300" : "text-zinc-400")} />
+              <Icon className={cn("h-4 w-4", active ? "text-nexus-orange" : "text-nexus-muted")} />
               <span>{item.label}</span>
             </Link>
           );

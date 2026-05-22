@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { File, FileText, Image as ImageIcon, Video } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -31,6 +32,14 @@ export function FileCard({
   const isDocument = file.file_type === "document";
   const shouldPreview = file.file_type === "image" || isDocument;
   const pdfPreviewUrl = signedUrl ? `${signedUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1` : null;
+  const PreviewIcon =
+    file.file_type === "image"
+      ? ImageIcon
+      : file.file_type === "video"
+        ? Video
+        : file.file_type === "document"
+          ? FileText
+          : File;
 
   useEffect(() => {
     let mounted = true;
@@ -63,7 +72,7 @@ export function FileCard({
 
   return (
     <Card
-      className="group cursor-pointer border-zinc-800 bg-zinc-950/30 transition-colors hover:bg-zinc-950/50"
+      className="group cursor-pointer border-nexus-border bg-nexus-surface transition-colors hover:border-nexus-orange"
       onClick={() => onOpen(file.id)}
       role="button"
       tabIndex={0}
@@ -77,10 +86,10 @@ export function FileCard({
           <img
             src={signedUrl}
             alt={file.name}
-            className="h-32 w-full rounded-lg border border-zinc-800 object-cover"
+            className="h-32 w-full rounded-lg border border-nexus-border object-cover"
           />
         ) : (isPdf || isDocument) && pdfPreviewUrl ? (
-          <div className="h-32 overflow-hidden rounded-lg border border-zinc-800 bg-white">
+          <div className="h-32 overflow-hidden rounded-lg border border-nexus-border bg-white">
             <iframe
               src={pdfPreviewUrl}
               title={`${file.name} preview`}
@@ -89,28 +98,30 @@ export function FileCard({
             />
           </div>
         ) : shouldPreview ? (
-          <div className="flex h-32 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950/20 text-sm text-zinc-500">
-            {previewChecked ? "Open document" : "Loading preview..."}
+          <div className="flex h-32 flex-col items-center justify-center gap-2 rounded-lg border border-nexus-border bg-nexus-surface text-sm text-nexus-muted">
+            <PreviewIcon className="h-8 w-8 text-nexus-purple" />
+            <span>{previewChecked ? "Open document" : "Loading preview..."}</span>
           </div>
         ) : (
-          <div className="flex h-32 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950/20 text-zinc-400">
-            {file.file_type === "document" ? "PDF/DOC" : "FILE"}
+          <div className="flex h-32 flex-col items-center justify-center gap-2 rounded-lg border border-nexus-border bg-nexus-surface text-nexus-muted">
+            <PreviewIcon className="h-8 w-8 text-nexus-purple" />
+            <span className="text-xs font-medium uppercase">{file.file_type}</span>
           </div>
         )}
 
         <div className="mt-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{file.name}</div>
-            <div className="mt-1 text-xs text-zinc-400">{created}</div>
+            <div className="mt-1 text-xs text-nexus-muted">{created}</div>
           </div>
 
-          <Badge className="shrink-0 bg-zinc-900/40">{file.file_type}</Badge>
+          <Badge className="shrink-0">{file.file_type}</Badge>
         </div>
 
         {file.tags?.length ? (
           <div className="mt-2 flex flex-wrap gap-1">
             {file.tags.slice(0, 3).map((t) => (
-              <span key={t} className="rounded border border-zinc-800 bg-zinc-900/30 px-1.5 py-0.5 text-[10px] text-zinc-200">
+              <span key={t} className="rounded border border-nexus-border bg-nexus-surface px-1.5 py-0.5 text-[10px] text-nexus-muted">
                 {t}
               </span>
             ))}

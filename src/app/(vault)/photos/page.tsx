@@ -53,10 +53,10 @@ function PhotoThumb({
         <img
           src={signedUrl}
           alt={photo.name}
-          className="h-auto w-full rounded-xl border border-zinc-800 bg-zinc-950/20 object-cover"
+          className="h-auto w-full rounded-xl border border-nexus-border bg-nexus-surface object-cover"
         />
       ) : (
-        <div className="h-40 w-full rounded-xl border border-zinc-800 bg-zinc-950/20 p-3">
+        <div className="h-40 w-full rounded-xl border border-nexus-border bg-nexus-surface p-3">
           <Skeleton className="h-full w-full" />
         </div>
       )}
@@ -130,29 +130,29 @@ export default function PhotosPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display text-3xl tracking-wide">Photos</h1>
-        <p className="mt-1 text-sm text-zinc-400">Masonry gallery grouped by month/year.</p>
+        <h1 className="font-display text-3xl font-extrabold">Photos</h1>
+        <p className="mt-1 text-sm text-nexus-muted">Masonry gallery grouped by month/year.</p>
       </header>
 
-      <Card className="border-zinc-800 bg-zinc-950/30">
+      <Card className="border-nexus-border bg-nexus-surface">
         <div className="p-4">
           {loading ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 9 }).map((_, idx) => (
-                <div key={idx} className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-3">
+                <div key={idx} className="rounded-xl border border-nexus-border bg-nexus-surface p-3">
                   <Skeleton className="h-36 w-full" />
                 </div>
               ))}
             </div>
           ) : photos.length === 0 ? (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-8 text-center text-zinc-400">
+            <div className="rounded-xl border border-nexus-border bg-nexus-surface p-8 text-center text-nexus-muted">
               No photos yet. Upload an image to start your gallery.
             </div>
           ) : (
             <div className="space-y-8">
               {grouped.map((g) => (
                 <section key={g.label}>
-                  <h2 className="mb-3 font-display text-xl tracking-wide text-zinc-100">
+                  <h2 className="mb-3 font-display text-xl font-bold text-nexus-text">
                     {g.label}
                   </h2>
                   <div className="columns-2 gap-4 sm:columns-3 md:columns-4">

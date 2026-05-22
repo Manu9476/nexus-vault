@@ -29,7 +29,7 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-800 bg-zinc-950/95 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-nexus-border bg-nexus-bg md:hidden">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -40,11 +40,13 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 rounded-lg px-2 py-2 text-[11px] transition-colors",
-                active ? "text-amber-300" : "text-zinc-400 hover:text-zinc-50"
+                "flex flex-col items-center justify-center gap-1 rounded-xl border-l-[3px] px-2 py-2 text-[11px] transition-colors",
+                active
+                  ? "border-nexus-orange bg-nexus-surface text-nexus-orange"
+                  : "border-transparent text-nexus-muted hover:text-nexus-text"
               )}
             >
-              <Icon className={cn("h-5 w-5", active ? "stroke-amber-300" : "")} />
+              <Icon className={cn("h-5 w-5", active ? "stroke-nexus-orange" : "")} />
             </Link>
           );
         })}

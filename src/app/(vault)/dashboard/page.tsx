@@ -109,14 +109,14 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="font-display text-3xl tracking-wide">Dashboard</h1>
-          <p className="mt-1 text-sm text-zinc-400">Your personal archive at a glance.</p>
+          <h1 className="font-display text-3xl font-extrabold">Dashboard</h1>
+          <p className="mt-1 text-sm text-nexus-muted">Your personal archive at a glance.</p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link
             href="/organizer"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-800 px-4 text-sm font-medium text-zinc-50 transition-colors hover:bg-zinc-700"
+            className="inline-flex h-10 items-center justify-center rounded-full bg-nexus-orange px-4 text-sm font-bold text-white transition-colors hover:bg-nexus-orange"
           >
             Quick Upload
           </Link>
@@ -125,60 +125,60 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 md:grid-cols-4">
         <Link href="/files" className="block">
-        <Card className="h-full transition-colors hover:border-zinc-700 hover:bg-zinc-900/40">
+        <Card className="h-full transition-colors hover:border-nexus-orange">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-zinc-400">Total files</CardTitle>
+            <CardTitle className="text-sm font-normal text-nexus-muted">Total files</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {loading ? (
               <Skeleton className="h-7 w-16" />
             ) : (
-              <div className="font-display text-2xl">{stats.totalFiles}</div>
+              <div className="font-display text-2xl font-extrabold">{stats.totalFiles}</div>
             )}
           </CardContent>
         </Card>
         </Link>
 
         <Link href="/photos" className="block">
-        <Card className="h-full transition-colors hover:border-zinc-700 hover:bg-zinc-900/40">
+        <Card className="h-full transition-colors hover:border-nexus-orange">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-zinc-400">Photos</CardTitle>
+            <CardTitle className="text-sm font-normal text-nexus-muted">Photos</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {loading ? (
               <Skeleton className="h-7 w-16" />
             ) : (
-              <div className="font-display text-2xl">{stats.photos}</div>
+              <div className="font-display text-2xl font-extrabold">{stats.photos}</div>
             )}
           </CardContent>
         </Card>
         </Link>
 
         <Link href="/documents" className="block">
-        <Card className="h-full transition-colors hover:border-zinc-700 hover:bg-zinc-900/40">
+        <Card className="h-full transition-colors hover:border-nexus-orange">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-zinc-400">Documents</CardTitle>
+            <CardTitle className="text-sm font-normal text-nexus-muted">Documents</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {loading ? (
               <Skeleton className="h-7 w-16" />
             ) : (
-              <div className="font-display text-2xl">{stats.documents}</div>
+              <div className="font-display text-2xl font-extrabold">{stats.documents}</div>
             )}
           </CardContent>
         </Card>
         </Link>
 
         <Link href="/gallery" className="block">
-        <Card className="h-full transition-colors hover:border-zinc-700 hover:bg-zinc-900/40">
+        <Card className="h-full transition-colors hover:border-nexus-orange">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-zinc-400">Storage used</CardTitle>
+            <CardTitle className="text-sm font-normal text-nexus-muted">Storage used</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {loading ? (
               <Skeleton className="h-7 w-24" />
             ) : (
-              <div className="font-display text-2xl">{formatBytes(stats.storageUsedBytes)}</div>
+              <div className="font-display text-2xl font-extrabold">{formatBytes(stats.storageUsedBytes)}</div>
             )}
           </CardContent>
         </Card>
@@ -187,8 +187,8 @@ export default function DashboardPage() {
 
       <section>
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-xl tracking-wide">Recently added</h2>
-          <Link href="/gallery" className="text-sm text-zinc-400 hover:text-zinc-50">
+          <h2 className="font-display text-xl font-bold">Recently added</h2>
+          <Link href="/gallery" className="text-sm text-nexus-muted hover:text-nexus-text">
             View gallery
           </Link>
         </div>
@@ -205,7 +205,7 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : recent.length === 0 ? (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-6 text-zinc-400">
+            <div className="rounded-xl border border-nexus-border bg-nexus-surface p-6 text-nexus-muted">
               No files yet. Upload your first photo or document to start building your vault.
             </div>
           ) : (

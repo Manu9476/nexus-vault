@@ -9,16 +9,20 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-      },
       fontFamily: {
         body: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "ui-serif", "Georgia", "serif"],
+        display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       colors: {
+        nexus: {
+          bg: "#1C1C1E",
+          surface: "#2A2A2E",
+          orange: "#FF6B2B",
+          purple: "#7B6FCD",
+          text: "#FFFFFF",
+          muted: "#A0A0A8",
+          border: "#3A3A3E",
+        },
         background: "var(--background)",
         foreground: "var(--foreground)",
         card: {

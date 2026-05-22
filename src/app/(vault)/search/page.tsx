@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
@@ -33,8 +33,8 @@ export default function SearchPage() {
 
   return (
     <div className="space-y-6 flex flex-col items-center justify-center pt-24">
-      <h1 className="font-display text-4xl tracking-wide mb-2">Search Vault</h1>
-      <p className="text-zinc-400 mb-8 max-w-md text-center">
+      <h1 className="font-display text-4xl font-extrabold mb-2">Search Vault</h1>
+      <p className="text-nexus-muted mb-8 max-w-md text-center">
         Find files by name, tag, course code, year, semester, or record type.
       </p>
 
@@ -54,7 +54,7 @@ export default function SearchPage() {
       <div className="flex max-w-2xl flex-wrap justify-center gap-2">
         {quickSearches.map((item) => (
           <Link key={item} href={`/files?q=${encodeURIComponent(item)}`}>
-            <Badge className="transition-colors hover:border-amber-300/70 hover:text-amber-200">
+            <Badge className="transition-colors hover:border-nexus-orange/70 hover:text-nexus-orange">
               {item}
             </Badge>
           </Link>

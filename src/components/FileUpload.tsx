@@ -259,10 +259,10 @@ export function FileUpload({
   }
 
   return (
-    <Card className="border-zinc-800 bg-zinc-950/30">
+    <Card className="border-nexus-border bg-nexus-surface">
       <CardContent className="p-4">
         {!supabase ? (
-          <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+          <div className="mb-4 rounded-xl border border-nexus-orange/40 bg-nexus-orange/10 p-4 text-sm text-nexus-orange">
             Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL,
             NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY in .env.local,
             then restart the dev server to enable uploads and folder data.
@@ -272,12 +272,12 @@ export function FileUpload({
         <div
           onDrop={onDrop}
           onDragOver={onDragOver}
-          className="rounded-xl border border-dashed border-zinc-800 bg-zinc-950/20 p-5"
+          className="rounded-xl border border-dashed border-nexus-border bg-nexus-surface p-5"
         >
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="font-display text-lg tracking-wide">Smart upload</div>
-              <div className="mt-1 text-sm text-zinc-400">
+              <div className="font-display text-lg font-bold">Smart upload</div>
+              <div className="mt-1 text-sm text-nexus-muted">
                 Add records, results, notes, and supporting files.
               </div>
             </div>
@@ -314,9 +314,9 @@ export function FileUpload({
 
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <div className="space-y-2">
-              <div className="text-xs text-zinc-400">Workload</div>
+              <div className="text-xs text-nexus-muted">Workload</div>
               <select
-                className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
+                className="flex h-10 w-full rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
                 value={meta.structured.mode}
                 onChange={(e) =>
                   updateStructured("mode", e.target.value as UploadMode)
@@ -332,9 +332,9 @@ export function FileUpload({
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs text-zinc-400">Folder</div>
+              <div className="text-xs text-nexus-muted">Folder</div>
               <select
-                className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
+                className="flex h-10 w-full rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
                 value={meta.folderId ?? ""}
                 onChange={(e) => setMeta((m) => ({ ...m, folderId: e.target.value || null }))}
                 disabled={isUploading || loadingFolders || Boolean(defaultFolderId)}
@@ -352,9 +352,9 @@ export function FileUpload({
 
             {meta.structured.mode === "personal-record" ? (
               <div className="space-y-2 md:col-span-2">
-                <div className="text-xs text-zinc-400">Record type</div>
+                <div className="text-xs text-nexus-muted">Record type</div>
                 <select
-                  className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
+                  className="flex h-10 w-full rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
                   value={meta.structured.personalRecordType}
                   onChange={(e) =>
                     updateStructured("personalRecordType", e.target.value as PersonalRecordType)
@@ -373,9 +373,9 @@ export function FileUpload({
             {meta.structured.mode.startsWith("academic") ? (
               <>
                 <div className="space-y-2">
-                  <div className="text-xs text-zinc-400">Year</div>
+                  <div className="text-xs text-nexus-muted">Year</div>
                   <select
-                    className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
+                    className="flex h-10 w-full rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
                     value={meta.structured.academicYear}
                     onChange={(e) => updateStructured("academicYear", e.target.value)}
                     disabled={isUploading}
@@ -389,9 +389,9 @@ export function FileUpload({
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-xs text-zinc-400">Semester</div>
+                  <div className="text-xs text-nexus-muted">Semester</div>
                   <select
-                    className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
+                    className="flex h-10 w-full rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
                     value={meta.structured.semester}
                     onChange={(e) => updateStructured("semester", e.target.value)}
                     disabled={isUploading}
@@ -405,7 +405,7 @@ export function FileUpload({
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-xs text-zinc-400">Course code</div>
+                  <div className="text-xs text-nexus-muted">Course code</div>
                   <Input
                     value={meta.structured.courseCode}
                     onChange={(e) => updateStructured("courseCode", e.target.value)}
@@ -415,7 +415,7 @@ export function FileUpload({
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-xs text-zinc-400">Course title</div>
+                  <div className="text-xs text-nexus-muted">Course title</div>
                   <Input
                     value={meta.structured.courseTitle}
                     onChange={(e) => updateStructured("courseTitle", e.target.value)}
@@ -427,7 +427,7 @@ export function FileUpload({
             ) : null}
 
             {!defaultFolderId ? (
-              <label className="flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-2 text-sm text-zinc-300 md:col-span-2">
+              <label className="flex items-center gap-2 rounded-xl border border-nexus-border px-3 py-2 text-sm text-nexus-muted md:col-span-2">
                 <input
                   type="checkbox"
                   checked={meta.autoOrganize}
@@ -435,14 +435,14 @@ export function FileUpload({
                     setMeta((m) => ({ ...m, autoOrganize: e.target.checked }))
                   }
                   disabled={isUploading}
-                  className="h-4 w-4 accent-amber-400"
+                  className="h-4 w-4 accent-nexus-orange"
                 />
                 Auto-create the matching folder when no folder is selected
               </label>
             ) : null}
 
             <div className="space-y-2">
-              <div className="text-xs text-zinc-400">Title (optional)</div>
+              <div className="text-xs text-nexus-muted">Title (optional)</div>
               <Input
                 value={meta.titlePrefix}
                 onChange={(e) => setMeta((m) => ({ ...m, titlePrefix: e.target.value }))}
@@ -452,7 +452,7 @@ export function FileUpload({
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <div className="text-xs text-zinc-400">Description (optional)</div>
+              <div className="text-xs text-nexus-muted">Description (optional)</div>
               <Input
                 value={meta.description}
                 onChange={(e) => setMeta((m) => ({ ...m, description: e.target.value }))}
@@ -462,7 +462,7 @@ export function FileUpload({
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <div className="text-xs text-zinc-400">Tags (optional)</div>
+              <div className="text-xs text-nexus-muted">Tags (optional)</div>
               <Input
                 value={meta.tagsInput}
                 onChange={(e) => setMeta((m) => ({ ...m, tagsInput: e.target.value }))}
@@ -472,7 +472,7 @@ export function FileUpload({
             </div>
           </div>
 
-          <p className="mt-3 text-xs text-zinc-500">
+          <p className="mt-3 text-xs text-nexus-muted">
             HEIC images are stored safely, but browser preview may need conversion.
           </p>
         </div>

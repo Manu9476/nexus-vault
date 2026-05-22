@@ -143,19 +143,19 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="font-display text-3xl tracking-wide">Settings</h1>
-          <p className="mt-1 text-sm text-zinc-400">
+          <h1 className="font-display text-3xl font-extrabold">Settings</h1>
+          <p className="mt-1 text-sm text-nexus-muted">
             Control how Nexus organizes and opens your vault.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/organizer">
-            <Badge className="transition-colors hover:border-amber-300/70 hover:text-amber-200">
+            <Badge className="transition-colors hover:border-nexus-orange/70 hover:text-nexus-orange">
               Organizer
             </Badge>
           </Link>
           <Link href="/folders">
-            <Badge className="transition-colors hover:border-amber-300/70 hover:text-amber-200">
+            <Badge className="transition-colors hover:border-nexus-orange/70 hover:text-nexus-orange">
               Folders
             </Badge>
           </Link>
@@ -163,18 +163,18 @@ export default function SettingsPage() {
       </header>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-        <Card className="border-zinc-800 bg-zinc-950/30">
+        <Card className="border-nexus-border bg-nexus-surface">
           <CardHeader>
-            <CardTitle className="text-base font-semibold text-zinc-100">
+            <CardTitle className="text-base font-semibold text-nexus-text">
               Defaults
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-3 md:grid-cols-2">
               <label className="space-y-2">
-                <span className="block text-xs text-zinc-400">Default file view</span>
+                <span className="block text-xs text-nexus-muted">Default file view</span>
                 <select
-                  className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
+                  className="h-10 w-full rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
                   value={preferences.defaultFileView}
                   onChange={(event) =>
                     updatePreference("defaultFileView", event.target.value as FileViewPreference)
@@ -186,9 +186,9 @@ export default function SettingsPage() {
               </label>
 
               <label className="space-y-2">
-                <span className="block text-xs text-zinc-400">Default upload workload</span>
+                <span className="block text-xs text-nexus-muted">Default upload workload</span>
                 <select
-                  className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50"
+                  className="h-10 w-full rounded-xl border border-nexus-border bg-nexus-surface px-3 text-sm text-nexus-text"
                   value={preferences.defaultUploadMode}
                   onChange={(event) =>
                     updatePreference("defaultUploadMode", event.target.value as UploadMode)
@@ -203,14 +203,14 @@ export default function SettingsPage() {
               </label>
             </div>
 
-            <label className="flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-2 text-sm text-zinc-300">
+            <label className="flex items-center gap-2 rounded-xl border border-nexus-border px-3 py-2 text-sm text-nexus-muted">
               <input
                 type="checkbox"
                 checked={preferences.autoOrganizeUploads}
                 onChange={(event) =>
                   updatePreference("autoOrganizeUploads", event.target.checked)
                 }
-                className="h-4 w-4 accent-amber-400"
+                className="h-4 w-4 accent-nexus-orange"
               />
               Auto-create matching folders during structured uploads
             </label>
@@ -226,47 +226,47 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/30">
+        <Card className="border-nexus-border bg-nexus-surface">
           <CardHeader>
-            <CardTitle className="text-base font-semibold text-zinc-100">
+            <CardTitle className="text-base font-semibold text-nexus-text">
               Account
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-zinc-400">Supabase</span>
-              <Badge className={supabase ? "border-emerald-400/40 text-emerald-200" : "border-red-400/40 text-red-200"}>
+              <span className="text-nexus-muted">Supabase</span>
+              <Badge className={supabase ? "" : "border-nexus-orange bg-transparent text-nexus-orange"}>
                 {supabase ? "Configured" : "Missing env vars"}
               </Badge>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-zinc-400">Signed in</span>
-              <span className="truncate text-right text-zinc-100">
+              <span className="text-nexus-muted">Signed in</span>
+              <span className="truncate text-right text-nexus-text">
                 {checkingAccount ? "Checking..." : email ?? "No"}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-zinc-400">Storage bucket</span>
-              <span className="font-mono text-xs text-zinc-100">nexus-files</span>
+              <span className="text-nexus-muted">Storage bucket</span>
+              <span className="font-mono text-xs text-nexus-text">nexus-files</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-zinc-800 bg-zinc-950/30">
+      <Card className="border-nexus-border bg-nexus-surface">
         <CardHeader>
-          <CardTitle className="text-base font-semibold text-zinc-100">
+          <CardTitle className="text-base font-semibold text-nexus-text">
             Folder Setup
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm text-zinc-300">
+              <p className="text-sm text-nexus-muted">
                 Create the recommended structure for IDs, certificates, results, and course notes.
               </p>
               {lastFolderSetup ? (
-                <p className="mt-1 text-xs text-emerald-200">{lastFolderSetup}</p>
+                <p className="mt-1 text-xs text-nexus-orange">{lastFolderSetup}</p>
               ) : null}
             </div>
             <Button
@@ -282,13 +282,13 @@ export default function SettingsPage() {
             {recommendedVaultFolders.slice(0, 12).map((folder) => (
               <div
                 key={folder}
-                className="truncate rounded border border-zinc-800 bg-zinc-900/30 px-3 py-2 text-xs text-zinc-300"
+                className="truncate rounded border border-nexus-border bg-nexus-surface px-3 py-2 text-xs text-nexus-muted"
               >
                 {folder}
               </div>
             ))}
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-nexus-muted">
             Includes {recommendedVaultFolders.length} recommended folders. Existing folders are skipped.
           </p>
         </CardContent>
