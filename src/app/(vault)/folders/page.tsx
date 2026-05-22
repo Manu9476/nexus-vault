@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, Folder as FolderIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { createSupabaseBrowser } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,12 @@ export default function FoldersPage() {
   const [creating, setCreating] = useState(false);
 
   const fetchFolders = useCallback(async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setFolders([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -29,8 +35,9 @@ export default function FoldersPage() {
         .order("created_at", { ascending: false });
       if (error) throw error;
       setFolders((data ?? []) as VaultFolder[]);
-    } catch (e) {
-      console.error(e);
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to load folders.");
+      setFolders([]);
     } finally {
       setLoading(false);
     }
@@ -42,7 +49,11 @@ export default function FoldersPage() {
 
   async function handleCreateFolder(e: React.FormEvent) {
     e.preventDefault();
-    if (!newFolderName.trim() || !supabase) return;
+    if (!newFolderName.trim()) return;
+    if (!supabase) {
+      toast.error("Supabase is not configured yet.");
+      return;
+    }
 
     setCreating(true);
     try {
@@ -60,8 +71,9 @@ export default function FoldersPage() {
       
       setNewFolderName("");
       await fetchFolders();
-    } catch (err) {
-      console.error(err);
+      toast.success("Folder created.");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to create folder.");
     } finally {
       setCreating(false);
     }

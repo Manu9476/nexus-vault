@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { createSupabaseBrowser } from "@/lib/supabase";
@@ -32,6 +32,7 @@ export function FileUpload({
   defaultFolderId?: string | null;
 }) {
   const supabase = useMemo(() => createSupabaseBrowser(), []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [folders, setFolders] = useState<VaultFolder[]>([]);
   const [loadingFolders, setLoadingFolders] = useState(true);
@@ -200,24 +201,32 @@ export function FileUpload({
             </div>
 
             <div className="flex items-center gap-3">
-              <label>
-                <input
-                  type="file"
-                  className="hidden"
-                  multiple
-                  disabled={!supabase}
-                  onChange={(e) => {
-                    if (e.target.files) uploadFiles(e.target.files);
-                  }}
-                />
-                <Button type="button" disabled={isUploading || !supabase}>
-                  {isUploading
-                    ? "Uploading..."
-                    : !supabase
-                      ? "Configure Supabase first"
-                      : "Choose files"}
-                </Button>
-              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                multiple
+                disabled={!supabase || isUploading}
+                onChange={(e) => {
+                  const input = e.currentTarget;
+                  const files = input.files ? Array.from(input.files) : [];
+                  if (!files.length) return;
+                  void uploadFiles(files).finally(() => {
+                    input.value = "";
+                  });
+                }}
+              />
+              <Button
+                type="button"
+                disabled={isUploading || !supabase}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isUploading
+                  ? "Uploading..."
+                  : !supabase
+                    ? "Configure Supabase first"
+                    : "Choose files"}
+              </Button>
             </div>
           </div>
 

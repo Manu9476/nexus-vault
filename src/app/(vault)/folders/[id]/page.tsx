@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
 import { createSupabaseBrowser } from "@/lib/supabase";
 import type { VaultFolder } from "@/types";
@@ -28,7 +29,14 @@ export default function FolderContentsPage() {
   const [viewerFileId, setViewerFileId] = useState<string | null>(null);
 
   async function fetchFolderData() {
-    if (!supabase || !folderId) return;
+    if (!folderId) return;
+    if (!supabase) {
+      setFolder(null);
+      setFiles([]);
+      setLoading(false);
+      toast.error("Supabase is not configured yet.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -49,8 +57,8 @@ export default function FolderContentsPage() {
 
       if (filesErr) throw filesErr;
       setFiles((filesData ?? []) as any);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to load folder.");
       setFiles([]);
     } finally {
       setLoading(false);
