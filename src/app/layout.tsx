@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display } from "next/font/google";
+import { DM_Sans, Playfair_Display, Geist } from "next/font/google";
 import type { CSSProperties } from "react";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const displayFont = Playfair_Display({
   subsets: ["latin"],
@@ -30,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="dark"
+      className={cn("dark", "font-sans", geist.variable)}
       style={
         {
           "--font-display": displayFont.style.fontFamily,
